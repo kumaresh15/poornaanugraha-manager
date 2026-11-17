@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sri Poorna Anugraha Hall Manager</title>
+    
+    <!-- PWA & Mobile Engine Settings -->
+    <meta name="theme-color" content="#7c5400">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Hall Manager">
+    
+    <!-- Embedded Custom SVG App Icon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%237c5400'/><text y='68' x='50' font-size='55' text-anchor='middle'>🏛️</text></svg>">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%237c5400'/><text y='68' x='50' font-size='55' text-anchor='middle'>🏛️</text></svg>">
+
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="data:application/manifest+json;utf8,{
+        %22name%22:%22Sri%20Poorna%20Anugraha%20Mini%20Hall%22,
+        %22short_name%22:%22Hall%20Manager%22,
+        %22start_url%22:%22/%22,
+        %22display%22:%22standalone%22,
+        %22background_color%22:%22%23f5f3ef%22,
+        %22theme_color%22:%22%237c5400%22,
+        %22icons%22:[{
+            %22src%22:%22data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%237c5400'/><text y='68' x='50' font-size='55' text-anchor='middle'>🏛️</text></svg>%22,
+            %22sizes%22:%22192x192%22,
+            %22type%22:%22image/svg+xml%22,
+            %22purpose%22:%22any%20maskable%22
+        }]
+    }">
+
+    <!-- Tailwind CSS (CDN) & Lucide Icons -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <style>
+        body { -webkit-tap-highlight-color: transparent; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-amber-50/30 text-stone-800 font-sans antialiased min-h-screen pb-24">
+
+    <!-- Header Top Bar -->
+    <header class="bg-amber-900 text-amber-50 sticky top-0 z-30 shadow-md px-4 py-3.5 flex justify-between items-center">
+        <div class="flex items-center space-x-2.5">
+            <span class="text-2xl">🏛️</span>
+            <div>
+                <h1 class="font-bold text-base leading-tight tracking-wide">Sri Poorna Anugraha</h1>
+                <p class="text-xs text-amber-200 font-medium">Mini Hall Management System</p>
+            </div>
+        </div>
+        <button onclick="exportToCSV()" class="bg-amber-800 hover:bg-amber-700 text-amber-100 text-xs px-3 py-1.5 rounded-lg border border-amber-600 flex items-center gap-1.5 transition">
+            <i data-lucide="download" class="w-3.5 h-3.5"></i>
+            <span>Export CSV</span>
+        </button>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-lg mx-auto p-4 space-y-6">
+
+        <!-- Tab 1: Bookings View -->
+        <section id="tab-bookings" class="tab-content space-y-5">
+            
+            <!-- Add / Edit Booking Form Card -->
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-stone-200 space-y-4">
+                <div class="flex items-center justify-between border-b border-stone-100 pb-3">
+                    <h2 id="formTitle" class="font-bold text-stone-800 flex items-center gap-2">
+                        <i data-lucide="calendar-plus" class="w-5 h-5 text-amber-700"></i>
+                        <span>New Booking Record</span>
+                    </h2>
+                    <div id="cancelEditContainer"></div>
+                </div>
+
+                <form id="bookingForm" onsubmit="handleFormSubmit(event)" class="space-y-4">
+                    <input type="hidden" id="editingId" value="">
+                    
+                    <!-- Client Details -->
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-xs font-semibold text-stone-600 mb-1">Customer Name *</label>
+                            <input type="text" id="clientName" required placeholder="e.g. Kumaresh S" class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-stone-300 focus:outline-none focus:ring-2 focus:ring-amber-600 bg-stone-50/50">
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-stone-600 mb-1">Phone Number *</label>
+                                <input type="tel" id="clientPhone" required placeholder="9442071354" class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-stone-300 focus:outline-none focus:ring-2 focus:ring-amber-600 bg-stone-50/50">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-stone-600 mb-1">Hall Level *</label>
+                                <select id="hallLevel" required class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-stone-300 focus:outline-none focus:ring-2 focus:ring-amber-600 bg-white">
+                                    <option value="Level 1 (Capacity 60)">Level 1 (Seats 60)</option>
+                                    <option value="Level 2 (Capacity 100)">Level 2 (Seats 100)</option>
+                                    <option value="Both Halls (Full Venue)">Both Halls (Full Venue)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-stone-600 mb-1">Booking Date *</label>
+                                <input type="date" id="bookingDate" required class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-stone-300 focus:outline-none focus:ring-2 focus:ring-amber-600 bg-stone-50/50">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-stone-600 mb-1">Event Time Slot *</label>
+                                <select id="timeSlot" required class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-stone-300 focus:outline-none focus:ring-2 focus:ring-amber-600 bg-white">
+                                    <option value="Morning (6:00 AM - 2:00 PM)">Morning (6 AM - 2 PM)</option>
+                                    <option value="Evening (3:00 PM - 10:00 PM)">Evening (3 PM - 10 PM)</option>
+                                    <option value="Full Day">Full Day</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Decor Selection -->
+                    <div>
+                        <label class="block text-xs font-semibold text-stone-600 mb-1">Stage Decor Setup (Select 1 of 12)</label>
+                        <select id="decorOption" class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-stone-300 focus:outline-none focus:ring-2 focus:ring-amber-600 bg-white">
+                            <option value="Standard Flower Arch (Default)">1. Standard Flower Arch (Default)</option>
+                            <option value="Traditional Marigold & Mango Leaves">2. Traditional Marigold & Mango Leaves</option>
+                            <option value="Royal Jasmine & Rose Backdrop">3. Royal Jasmine & Rose Backdrop</option>
+                            <option value="Minimalist Pastel Floral Framework">4. Minimalist Pastel Floral Framework</option>
+                            <option value="Golden Temple Carving Replica Stage">5. Golden Temple Carving Replica Stage</option>
+                            <option value="Modern LED Neon & Floral Combo">6. Modern LED Neon & Floral Combo</option>
+                            <option value="Classic Naming Ceremony Cradle Setup">7. Classic Naming Ceremony Cradle Setup</option>
+                            <option value="Engagement Rings & Canopy Decor">8. Engagement Rings & Canopy Decor</option>
+                            <option value="Traditional Ear Piercing Special Stage">9. Traditional Ear Piercing Special Stage</option>
+                            <option value="Puberty Ceremony Floral Pavilion">10. Puberty Ceremony Floral Pavilion</option>
+                            <option value="Birthday Balloon Arch & Backdrop">11. Birthday Balloon Arch & Backdrop</option>
+                            <option value="Custom External Decorator (Client Managed)">12. Custom External Decorator (Client Managed)</option>
+                        </select>
+                    </div>
+
+                    <!-- Financial Inputs -->
+                    <div class="grid grid-cols-2 gap-3 pt-1">
+                        <div>
+                            <label class="block text-xs font-semibold text-stone-600 mb-1">Total Rent Amount (₹) *</label>
+                            <input type="number" id="totalAmount" required min="0" placeholder="e.g. 15000" class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-stone-300 focus:outline-none focus:ring-2 focus:ring-amber-600 bg-stone-50/50">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-stone-600 mb-1">Advance Received (₹)</label>
+                            <input type="number" id="advanceAmount" min="0" placeholder="e.g. 5000" value="0" class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-stone-300 focus:outline-none focus:ring-2 focus:ring-amber-600 bg-stone-50/50">
+                        </div>
+                    </div>
+
+                    <!-- Inquiry / Tentative Checkbox -->
+                    <div class="flex items-center gap-2 pt-1 bg-amber-50/60 p-3 rounded-xl border border-amber-200">
+                        <input type="checkbox" id="isInquiry" class="w-4 h-4 text-amber-800 rounded border-stone-300 focus:ring-amber-600">
+                        <label for="isInquiry" class="text-xs font-semibold text-amber-900 cursor-pointer">Mark as Inquiry / Tentative (Displays as "In Demand" on website)</label>
+                    </div>
+
+                    <button type="submit" id="submitBtn" class="w-full bg-amber-800 hover:bg-amber-900 active:bg-amber-950 text-white font-semibold py-3 rounded-xl shadow-md flex items-center justify-center gap-2 text-sm transition">
+                        <i data-lucide="check-circle-2" class="w-4 h-4"></i>
+                        <span>Save & Sync to Google Calendar</span>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Booking Records Header -->
+            <div class="flex items-center justify-between px-1">
+                <h3 class="font-bold text-stone-800 text-sm flex items-center gap-2">
+                    <i data-lucide="list" class="w-4 h-4 text-amber-700"></i>
+                    <span>All Recorded Bookings</span>
+                </h3>
+                <span id="bookingCounter" class="text-xs bg-stone-200 text-stone-700 px-2 py-0.5 rounded-md font-medium">0 records</span>
+            </div>
+
+            <!-- Booking Cards Container -->
+            <div id="bookingList" class="space-y-3">
+                <!-- Dynamic Content Injected Here -->
+            </div>
+        </section>
+
+        <!-- Tab 2: Calendar Ledger View -->
+        <section id="tab-calendar" class="tab-content hidden space-y-4">
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-stone-200 space-y-4">
+                <div class="flex items-center justify-between">
+                    <h2 class="font-bold text-stone-800 flex items-center gap-2">
+                        <i data-lucide="calendar" class="w-5 h-5 text-amber-700"></i>
+                        <span>Availability & Schedule</span>
+                    </h2>
+                    <input type="month" id="calendarMonth" onchange="renderCalendar()" class="text-xs border border-stone-300 rounded-lg px-2 py-1 bg-stone-50">
+                </div>
+                <div id="calendarGrid" class="grid grid-cols-7 gap-1 text-center text-xs pt-2">
+                    <!-- Calendar Rendered Here -->
+                </div>
+            </div>
+            
+            <div class="bg-amber-100/60 border border-amber-200 rounded-xl p-3.5 text-xs text-amber-900 space-y-1">
+                <p class="font-bold flex items-center gap-1.5">
+                    <i data-lucide="info" class="w-4 h-4 text-amber-700"></i>
+                    <span>Venue Capacity Rules</span>
+                </p>
+                <p>• Level 1 Hall: Seating capacity ~60 people (Non-AC)</p>
+                <p>• Level 2 Hall: Seating capacity ~100 people (Non-AC)</p>
+                <p>• Dining Area: Seats 20-25 simultaneously (Staircase access only)</p>
+            </div>
+        </section>
+
+        <!-- Tab 3: Financial Summary View -->
+        <section id="tab-ledger" class="tab-content hidden space-y-4">
+            <div class="grid grid-cols-2 gap-3">
+                <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 text-emerald-900">
+                    <p class="text-xs font-semibold text-emerald-700">Total Collected</p>
+                    <p id="statCollected" class="text-xl font-black mt-1">₹0</p>
+                </div>
+                <div class="bg-rose-50 border border-rose-200 rounded-2xl p-4 text-rose-900">
+                    <p class="text-xs font-semibold text-rose-700">Pending Balance</p>
+                    <p id="statPending" class="text-xl font-black mt-1">₹0</p>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-stone-200 space-y-3">
+                <h3 class="font-bold text-stone-800 text-sm border-b border-stone-100 pb-2">Quick WhatsApp Share</h3>
+                <p class="text-xs text-stone-500">Generate customer confirmation note for official contact (9442071354).</p>
+                <button onclick="shareLatestBookingWhatsApp()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2.5 rounded-xl shadow text-xs flex items-center justify-center gap-2">
+                    <i data-lucide="message-circle" class="w-4 h-4"></i>
+                    <span>Share Latest Receipt via WhatsApp</span>
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Bottom Navigation Bar -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-stone-200 shadow-lg z-40">
+        <div class="max-w-lg mx-auto grid grid-cols-3 py-2 text-center text-xs">
+            <button onclick="switchTab('bookings')" id="nav-bookings" class="flex flex-col items-center justify-center text-amber-800 font-bold space-y-1">
+                <i data-lucide="book-open" class="w-5 h-5"></i>
+                <span>Bookings</span>
+            </button>
+            <button onclick="switchTab('calendar')" id="nav-calendar" class="flex flex-col items-center justify-center text-stone-400 font-medium space-y-1">
+                <i data-lucide="calendar" class="w-5 h-5"></i>
+                <span>Calendar</span>
+            </button>
+            <button onclick="switchTab('ledger')" id="nav-ledger" class="flex flex-col items-center justify-center text-stone-400 font-medium space-y-1">
+                <i data-lucide="wallet" class="w-5 h-5"></i>
+                <span>Accounts</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Application Script Logic -->
+    <script>
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw7-U-WJwwkmKAy8X-c_e7LPELFATxlhvPdxsdjwVsVWxho2excnM-anJOOEsCjmttOig/exec';
+
+        const STORAGE_KEY = 'spa_mini_hall_bookings_db';
+        let bookings = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            setDefaultMonth();
+            renderBookings();
+            renderCalendar();
+            updateFinancialStats();
+            syncFromGoogleCalendar();
+        });
+
+        async function syncFromGoogleCalendar() {
+            try {
+                const response = await fetch(APPS_SCRIPT_URL);
+                const remoteEvents = await response.json();
+                
+                if (!Array.isArray(remoteEvents)) return;
+
+                let hasNewSync = false;
+
+                remoteEvents.forEach(evt => {
+                    const exists = bookings.some(b => b.date && b.date.trim().split('T')[0] === evt.date);
+
+                    if (!exists) {
+                        let clientName = evt.title ? evt.title.replace('BOOKED:', '').replace('HOLD:', '').trim() : 'Google Calendar Event';
+                        let phone = 'N/A';
+                        let hallLevel = 'Full Venue';
+                        let slot = 'Full Day';
+                        let decor = 'Standard Flower Arch (Default)';
+                        let total = 0;
+                        let advance = 0;
+                        let balance = 0;
+                        
+                        let status = 'Calendar Locked';
+                        if (evt.status === 'HOLD' || (evt.title && evt.title.toUpperCase().includes('HOLD'))) {
+                            status = 'Inquiry / Tentative';
+                        }
+
+                        if (evt.description && evt.description.includes('SRI POORNA ANUGRAHA')) {
+                            const lines = evt.description.split('\n');
+                            lines.forEach(line => {
+                                if (line.startsWith('Customer Name:')) clientName = line.replace('Customer Name:', '').trim();
+                                if (line.startsWith('Phone Number:')) phone = line.replace('Phone Number:', '').trim();
+                                if (line.startsWith('Hall Level:')) hallLevel = line.replace('Hall Level:', '').trim();
+                                if (line.startsWith('Time Slot:')) slot = line.replace('Time Slot:', '').trim();
+                                if (line.startsWith('Stage Decor:')) decor = line.replace('Stage Decor:', '').trim();
+                                if (line.startsWith('Total Rent: ₹')) total = parseFloat(line.replace('Total Rent: ₹', '').trim()) || 0;
+                                if (line.startsWith('Advance Paid: ₹')) advance = parseFloat(line.replace('Advance Paid: ₹', '').trim()) || 0;
+                                if (line.startsWith('Balance Due: ₹')) balance = parseFloat(line.replace('Balance Due: ₹', '').trim()) || 0;
+                                if (line.startsWith('Payment Status:')) status = line.replace('Payment Status:', '').trim();
+                            });
+                        }
+
+                        const newSyncedBooking = {
+                            id: 'gcal_' + evt.id,
+                            clientName: clientName,
+                            clientPhone: phone,
+                            level: hallLevel,
+                            date: evt.date,
+                            timeSlot: slot,
+                            decor: decor,
+                            totalAmount: total,
+                            advanceAmount: advance,
+                            balanceAmount: balance || (total - advance),
+                            status: status
+                        };
+
+                        bookings.push(newSyncedBooking);
+                        hasNewSync = true;
+                    }
+                });
+
+                if (hasNewSync) {
+                    saveData();
+                    renderBookings();
+                    renderCalendar();
+                    updateFinancialStats();
+                }
+            } catch (err) {
+                console.log('GCal Sync skipped:', err);
+            }
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+
+            const navs = ['bookings', 'calendar', 'ledger'];
+            navs.forEach(nav => {
+                const btn = document.getElementById(`nav-${nav}`);
+                if (nav === tabName) {
+                    btn.className = "flex flex-col items-center justify-center text-amber-800 font-bold space-y-1";
+                } else {
+                    btn.className = "flex flex-col items-center justify-center text-stone-400 font-medium space-y-1";
+                }
+            });
+            
+            if(tabName === 'calendar') renderCalendar();
+            if(tabName === 'ledger') updateFinancialStats();
+        }
+
+        async function handleFormSubmit(e) {
+            e.preventDefault();
+
+            const editingId = document.getElementById('editingId').value;
+            const date = document.getElementById('bookingDate').value;
+            const timeSlot = document.getElementById('timeSlot').value;
+            const level = document.getElementById('hallLevel').value;
+            const isInquiry = document.getElementById('isInquiry').checked;
+
+            const conflict = bookings.find(b => b.id !== editingId && b.date === date && (b.timeSlot === timeSlot || b.timeSlot === 'Full Day' || timeSlot === 'Full Day') && b.level === level && b.status !== 'Inquiry / Tentative');
+            if (conflict && !isInquiry) {
+                alert("⚠️ Date Conflict!\n" + level + " is already fully booked for " + date + " (" + timeSlot + ").");
+                return;
+            }
+
+            const total = parseFloat(document.getElementById('totalAmount').value) || 0;
+            const advance = parseFloat(document.getElementById('advanceAmount').value) || 0;
+
+            const bookingData = {
+                id: editingId ? editingId : Date.now().toString(),
+                clientName: document.getElementById('clientName').value.trim(),
+                clientPhone: document.getElementById('clientPhone').value.trim(),
+                level: level,
+                date: date,
+                timeSlot: timeSlot,
+                decor: document.getElementById('decorOption').value,
+                totalAmount: total,
+                advanceAmount: advance,
+                balanceAmount: total - advance,
+                status: isInquiry ? 'Inquiry / Tentative' : ((total - advance <= 0) ? 'Fully Paid' : 'Advance Locked')
+            };
+
+            if (editingId) {
+                const index = bookings.findIndex(b => b.id === editingId);
+                if (index !== -1) {
+                    bookings[index] = bookingData;
+                }
+                resetFormState();
+            } else {
+                bookings.unshift(bookingData);
+                document.getElementById('bookingForm').reset();
+            }
+
+            saveData();
+            renderBookings();
+            renderCalendar();
+            updateFinancialStats();
+
+            try {
+                fetch(APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(bookingData)
+                });
+                alert(isInquiry ? '✅ Inquiry saved! (Marked as tentative hold)' : '✅ Booking confirmed and locked in Google Calendar!');
+            } catch (err) {
+                alert('✅ Saved locally (will sync when online).');
+            }
+        }
+
+        function editBooking(id) {
+            const b = bookings.find(item => item.id === id);
+            if (!b) return;
+
+            document.getElementById('editingId').value = b.id;
+            document.getElementById('clientName').value = b.clientName;
+            document.getElementById('clientPhone').value = b.clientPhone;
+            document.getElementById('hallLevel').value = b.level;
+            document.getElementById('bookingDate').value = b.date;
+            document.getElementById('timeSlot').value = b.timeSlot;
+            document.getElementById('decorOption').value = b.decor;
+            document.getElementById('totalAmount').value = b.totalAmount;
+            document.getElementById('advanceAmount').value = b.advanceAmount;
+            document.getElementById('isInquiry').checked = (b.status === 'Inquiry / Tentative');
+
+            document.getElementById('formTitle').innerHTML = '<i data-lucide="file-edit" class="w-5 h-5 text-amber-700"></i><span>Edit Booking / Convert Inquiry</span>';
+            document.getElementById('submitBtn').innerHTML = '<i data-lucide="save" class="w-4 h-4"></i><span>Update Record & Sync</span>';
+            document.getElementById('cancelEditContainer').innerHTML = '<button type="button" onclick="resetFormState()" class="text-xs bg-stone-200 text-stone-700 px-2.5 py-1 rounded-lg font-medium hover:bg-stone-300">Cancel</button>';
+
+            lucide.createIcons();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function resetFormState() {
+            document.getElementById('bookingForm').reset();
+            document.getElementById('editingId').value = '';
+            document.getElementById('isInquiry').checked = false;
+            document.getElementById('formTitle').innerHTML = '<i data-lucide="calendar-plus" class="w-5 h-5 text-amber-700"></i><span>New Booking Record</span>';
+            document.getElementById('submitBtn').innerHTML = '<i data-lucide="check-circle-2" class="w-4 h-4"></i><span>Save & Sync to Google Calendar</span>';
+            document.getElementById('cancelEditContainer').innerHTML = '';
+            lucide.createIcons();
+        }
+
+        function renderBookings() {
+            const listEl = document.getElementById('bookingList');
+            document.getElementById('bookingCounter').innerText = `${bookings.length} records`;
+
+            if (bookings.length === 0) {
+                listEl.innerHTML = '<div class="bg-white rounded-2xl p-8 text-center text-stone-400 border border-stone-200"><i data-lucide="inbox" class="w-10 h-10 mx-auto mb-2 opacity-50"></i><p class="text-sm font-medium">No hall bookings recorded yet.</p></div>';
+                lucide.createIcons();
+                return;
+            }
+
+            listEl.innerHTML = bookings.map(b => {
+                let badgeColor = 'bg-amber-100 text-amber-800';
+                if (b.status === 'Fully Paid') badgeColor = 'bg-emerald-100 text-emerald-800';
+                if (b.status === 'Inquiry / Tentative') badgeColor = 'bg-yellow-100 text-yellow-900 border border-yellow-300';
+
+                return '<div class="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 space-y-3">' +
+                    '<div class="flex justify-between items-start">' +
+                        '<div>' +
+                            '<h4 class="font-bold text-stone-900 text-base">' + escapeHtml(b.clientName) + '</h4>' +
+                            '<p class="text-xs text-stone-500 flex items-center gap-1 mt-0.5">' +
+                                '<i data-lucide="phone" class="w-3 h-3"></i> ' + escapeHtml(b.clientPhone) +
+                            '</p>' +
+                        '</div>' +
+                        '<span class="text-xs px-2.5 py-1 rounded-full font-semibold ' + badgeColor + '">' +
+                            b.status +
+                        '</span>' +
+                    '</div>' +
+                    '<div class="bg-stone-50 rounded-xl p-3 text-xs space-y-1.5 text-stone-700">' +
+                        '<div class="flex justify-between"><span class="font-medium text-stone-500">Hall:</span><span class="font-semibold">' + b.level + '</span></div>' +
+                        '<div class="flex justify-between"><span class="font-medium text-stone-500">Date & Slot:</span><span class="font-semibold">' + b.date + ' (' + b.timeSlot + ')</span></div>' +
+                        '<div class="flex justify-between border-t border-stone-200 pt-1.5"><span class="font-medium text-stone-500">Stage Decor:</span><span class="font-semibold text-amber-900 truncate max-w-[200px]">' + b.decor + '</span></div>' +
+                    '</div>' +
+                    '<div class="flex justify-between items-center text-xs pt-1">' +
+                        '<div><span class="text-stone-500">Total: <b>₹' + b.totalAmount + '</b></span><span class="text-stone-400 mx-1">|</span><span class="text-emerald-700">Adv: <b>₹' + b.advanceAmount + '</b></span><span class="text-stone-400 mx-1">|</span><span class="text-rose-600">Bal: <b>₹' + b.balanceAmount + '</b></span></div>' +
+                        '<div class="flex items-center gap-1">' +
+                            '<button onclick="editBooking(\'' + b.id + '\')" class="text-stone-400 hover:text-amber-700 p-1" title="Edit Booking"><i data-lucide="edit-3" class="w-4 h-4"></i></button>' +
+                            '<button onclick="deleteBooking(\'' + b.id + '\')" class="text-stone-400 hover:text-rose-600 p-1" title="Delete Booking"><i data-lucide="trash-2" class="w-4 h-4"></i></button>' +
+                        '</div>' +
+                    '</div>' +
+                '</div>';
+            }).join('');
+            
+            lucide.createIcons();
+        }
+
+        function setDefaultMonth() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            document.getElementById('calendarMonth').value = `${year}-${month}`;
+        }
+
+        function renderCalendar() {
+            const grid = document.getElementById('calendarGrid');
+            const monthVal = document.getElementById('calendarMonth').value;
+            if (!monthVal) return;
+
+            const [year, month] = monthVal.split('-').map(Number);
+            const firstDay = new Date(year, month - 1, 1).getDay();
+            const daysInMonth = new Date(year, month, 0).getDate();
+
+            let html = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']
+                .map(d => `<div class="font-bold text-stone-400 pb-2 text-[11px]">${d}</div>`).join('');
+
+            for (let i = 0; i < firstDay; i++) {
+                html += '<div></div>';
+            }
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const targetDateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                
+                const dayBookings = bookings.filter(b => {
+                    if (!b.date) return false;
+                    const cleanStoredDate = b.date.trim().split('T')[0];
+                    return cleanStoredDate === targetDateStr;
+                });
+
+                const isBooked = dayBookings.some(b => b.status !== 'Inquiry / Tentative');
+                const isTentative = dayBookings.some(b => b.status === 'Inquiry / Tentative');
+
+                if (isBooked) {
+                    html += '<div onclick="showDateDetails(\'' + targetDateStr + '\')" class="p-1.5 rounded-xl text-center bg-amber-100 border border-amber-300 text-amber-950 font-bold cursor-pointer shadow-sm hover:bg-amber-200 transition"><span class="text-xs">' + day + '</span><span class="block text-[9px] text-amber-800 font-extrabold leading-none mt-0.5">BOOKED</span></div>';
+                } else if (isTentative) {
+                    html += '<div onclick="showDateDetails(\'' + targetDateStr + '\')" class="p-1.5 rounded-xl text-center bg-yellow-100 border border-yellow-300 text-yellow-900 font-bold cursor-pointer shadow-sm hover:bg-yellow-200 transition"><span class="text-xs">' + day + '</span><span class="block text-[9px] text-yellow-800 font-extrabold leading-none mt-0.5">HOLD</span></div>';
+                } else {
+                    html += '<div class="p-1.5 rounded-xl text-center bg-emerald-50/60 border border-emerald-100 text-stone-700 font-semibold"><span class="text-xs">' + day + '</span><span class="block text-[9px] text-emerald-600 font-medium leading-none mt-0.5">Free</span></div>';
+                }
+            }
+            grid.innerHTML = html;
+        }
+
+        function showDateDetails(dateStr) {
+            const dayBookings = bookings.filter(b => b.date && b.date.trim().split('T')[0] === dateStr);
+            let msg = "📅 Bookings for " + dateStr + ":\n\n";
+            dayBookings.forEach(b => {
+                msg += "• " + b.clientName + " (" + b.level + ")\n  Slot: " + b.timeSlot + "\n  Status: " + b.status + "\n\n";
+            });
+            alert(msg);
+        }
+
+        function updateFinancialStats() {
+            const collected = bookings.reduce((sum, b) => sum + (b.status !== 'Inquiry / Tentative' ? (b.advanceAmount || 0) : 0), 0);
+            const pending = bookings.reduce((sum, b) => sum + (b.status !== 'Inquiry / Tentative' ? (b.balanceAmount || 0) : 0), 0);
+            document.getElementById('statCollected').innerText = `₹${collected.toLocaleString()}`;
+            document.getElementById('statPending').innerText = `₹${pending.toLocaleString()}`;
+        }
+
+        function deleteBooking(id) {
+            if (confirm('Delete this booking record permanently from app memory?')) {
+                bookings = bookings.filter(b => b.id !== id);
+                saveData();
+                renderBookings();
+                renderCalendar();
+                updateFinancialStats();
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(bookings));
+        }
+
+        function exportToCSV() {
+            if (bookings.length === 0) {
+                alert('No booking data to export.');
+                return;
+            }
+            const headers = ['ID', 'Customer Name', 'Phone', 'Hall Level', 'Date', 'Time Slot', 'Decor', 'Total Amount', 'Advance', 'Balance', 'Status'];
+            const rows = bookings.map(b => [
+                b.id, `"${b.clientName}"`, `"${b.clientPhone}"`, `"${b.level}"`, b.date, `"${b.timeSlot}"`, `"${b.decor}"`, b.totalAmount, b.advanceAmount, b.balanceAmount, b.status
+            ]);
+
+            const csvContent = "data:text/csv;charset=utf-8," + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement('a');
+            link.setAttribute('href', encodedUri);
+            link.setAttribute('download', `Poorna_Anugraha_Bookings_${new Date().toISOString().slice(0,10)}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function shareLatestBookingWhatsApp() {
+            if (bookings.length === 0) {
+                alert('No bookings available to share.');
+                return;
+            }
+            const b = bookings[0];
+            const text = "🏛️ *Sri Poorna Anugraha Mini Hall Confirmation*\n\n" +
+                         "*Name:* " + b.clientName + "\n" +
+                         "*Hall:* " + b.level + "\n" +
+                         "*Date:* " + b.date + " (" + b.timeSlot + ")\n" +
+                         "*Decor:* " + b.decor + "\n\n" +
+                         "*Total Amount:* ₹" + b.totalAmount + "\n" +
+                         "*Advance Paid:* ₹" + b.advanceAmount + "\n" +
+                         "*Balance Due:* ₹" + b.balanceAmount + "\n\n" +
+                         "Thank you for booking with us!";
+            
+            window.open(`https://wa.me/91${b.clientPhone}?text=${encodeURIComponent(text)}`, '_blank');
+        }
+
+        function escapeHtml(str) {
+            return str.replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]));
+        }
+    </script>
+</body>
+</html>

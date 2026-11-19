@@ -926,22 +926,41 @@
         }
 
         async function syncExistingConfirmedBookingsToSheet() {
+            const excludedStatuses = [
+                'inquiry / tentative',
+                'inquiry',
+                'tentative',
+                'hold',
+                'cancelled',
+                'canceled'
+            ];
+
             const confirmed = bookings.filter(b => {
                 const st = String(b.status || '').trim().toLowerCase();
-                return st && !['inquiry / tentative', 'inquiry', 'tentative', 'hold', 'calendar locked'].includes(st);
+                const titleUpper = String(b.clientName || '').toUpperCase();
+                if (titleUpper.startsWith('HOLD:') || titleUpper.includes('TENTATIVE') || titleUpper.includes('INQUIRY')) {
+                    return false;
+                }
+                return !excludedStatuses.includes(st);
             });
 
             if (confirmed.length === 0) {
-                alert('No confirmed local bookings found to sync. (Edit a "Calendar Locked" or tentative record and uncheck Tentative if it is confirmed.)');
+                alert('No confirmed bookings found in local storage.');
                 return;
             }
 
             for (let i = 0; i < confirmed.length; i++) {
-                await syncToGoogleAppsScript(confirmed[i], 'UPSERT');
-                await new Promise(resolve => setTimeout(resolve, 250));
+                const recordToSync = {
+                    ...confirmed[i],
+                    status: (String(confirmed[i].status || '').toLowerCase() === 'calendar locked' || !confirmed[i].status)
+                        ? (getBalanceDue(confirmed[i]) === 0 && (parseFloat(confirmed[i].totalAmount) || 0) > 0 ? 'Fully Paid' : 'Advance Paid')
+                        : confirmed[i].status
+                };
+                await syncToGoogleAppsScript(recordToSync, 'UPSERT');
+                await new Promise(resolve => setTimeout(resolve, 350));
             }
 
-            alert(`Sent ${confirmed.length} confirmed booking(s) to sync with Google Sheets.`);
+            alert(`Synced ${confirmed.length} booking(s) to Google Sheets.`);
             reloadSheetFrame();
         }
 

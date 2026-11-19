@@ -13,23 +13,10 @@
     
     <!-- Embedded Custom SVG App Icon -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%237c5400'/><text y='68' x='50' font-size='55' text-anchor='middle'>🏛️</text></svg>">
-    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%237c5400'/><text y='68' x='50' font-size='55' text-anchor='middle'>🏛️</text></svg>">
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
 
     <!-- Web App Manifest -->
-    <link rel="manifest" href="data:application/manifest+json;utf8,{
-        %22name%22:%22Sri%20Poorna%20Anugraha%20Mini%20Hall%22,
-        %22short_name%22:%22Hall%20Manager%22,
-        %22start_url%22:%22/%22,
-        %22display%22:%22standalone%22,
-        %22background_color%22:%22%23f5f3ef%22,
-        %22theme_color%22:%22%237c5400%22,
-        %22icons%22:[{
-            %22src%22:%22data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%237c5400'/><text y='68' x='50' font-size='55' text-anchor='middle'>🏛️</text></svg>%22,
-            %22sizes%22:%22192x192%22,
-            %22type%22:%22image/svg+xml%22,
-            %22purpose%22:%22any%20maskable%22
-        }]
-    }">
+    <link rel="manifest" href="/manifest.json">
 
     <!-- Tailwind CSS (CDN) & Lucide Icons -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -1034,6 +1021,13 @@
 
         function escapeHtml(str) {
             return str.replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]));
+        }
+    </script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').catch(err => console.error('SW registration failed:', err));
+            });
         }
     </script>
 </body>

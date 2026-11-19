@@ -551,37 +551,39 @@
             document.getElementById('statPending').innerText = `₹${pending.toLocaleString()}`;
         }
 
-        async function deleteBooking(id) {
-            const targetBooking = bookings.find(b => b.id === id);
-            if (!targetBooking) return;
+       async function deleteBooking(id) {
+    const targetBooking = bookings.find(b => b.id === id);
+    if (!targetBooking) return;
 
-            if (confirm(`Delete booking for "${targetBooking.clientName}" on ${targetBooking.date} permanently?`)) {
-                // Delete from local memory & storage
-                bookings = bookings.filter(b => b.id !== id);
-                saveData();
-                renderBookings();
-                renderCalendar();
-                updateFinancialStats();
+    const confirmed = confirm(`Delete booking for "${targetBooking.clientName}" on ${targetBooking.date} permanently?`);
+    if (!confirmed) return;
 
-                // Delete from Google Calendar via Apps Script POST
-                try {
-                    fetch(APPS_SCRIPT_URL, {
-                        method: 'POST',
-                        mode: 'no-cors',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            action: 'DELETE',
-                            id: targetBooking.id,
-                            clientName: targetBooking.clientName,
-                            date: targetBooking.date
-                        })
-                    });
-                    alert('✅ Record deleted locally and Google Calendar removal request sent!');
-                } catch (err) {
-                    console.error('Failed to sync deletion to Google Calendar:', err);
-                }
-            }
-        }
+    // 1. Update local state & UI immediately
+    bookings = bookings.filter(b => b.id !== id);
+    saveData();
+    renderBookings();
+    renderCalendar();
+    updateFinancialStats();
+
+    // 2. Await the POST request to Google Apps Script
+    try {
+        console.log('Sending DELETE to Apps Script for:', targetBooking.id, targetBooking.date);
+        await fetch(APPS_SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'DELETE',
+                id: targetBooking.id,
+                clientName: targetBooking.clientName,
+                date: targetBooking.date
+            })
+        });
+        console.log('DELETE request completed (opaque response due to no-cors).');
+    } catch (err) {
+        console.error('Failed to sync deletion with Google Calendar:', err);
+    }
+}
 
         function saveData() {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(bookings));

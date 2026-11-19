@@ -94,7 +94,7 @@
                     </div>
                 </div>
 
-                <!-- RIGHT PANE: Detail View / Form Editor Pane (WhatsApp Chat Thread Style) -->
+                <!-- RIGHT PANE: Detail View / Form Editor Pane -->
                 <div id="bookingDetailPane" class="hidden md:flex md:col-span-7 lg:col-span-8 bg-white rounded-2xl border border-stone-200 shadow-sm flex-col overflow-hidden">
                     
                     <!-- Top Action Bar for Detail Pane -->
@@ -123,7 +123,7 @@
                             <!-- Injected dynamically when a log is selected -->
                         </div>
 
-                        <!-- 2. Form Editor View (Hidden by default, shown when adding/editing) -->
+                        <!-- 2. Form Editor View -->
                         <div id="formView" class="hidden bg-stone-50/50 rounded-2xl p-4 border border-stone-200 space-y-4">
                             <div class="flex items-center justify-between border-b border-stone-200 pb-3">
                                 <h3 id="formTitle" class="font-bold text-stone-800 text-sm flex items-center gap-2">
@@ -197,7 +197,7 @@
                                         <input type="number" id="totalAmount" required min="0" placeholder="e.g. 15000" class="w-full text-xs px-3.5 py-2 rounded-xl border border-stone-300 focus:outline-none focus:ring-2 focus:ring-amber-600 bg-white">
                                     </div>
                                     <div>
-                                        <label class="block text-xs font-semibold text-stone-600 mb-1">Advance Received (₹)</label>
+                                        <label class="block text-xs font-semibold text-stone-600 mb-1">Initial Advance (₹)</label>
                                         <input type="number" id="advanceAmount" min="0" placeholder="e.g. 5000" value="0" class="w-full text-xs px-3.5 py-2 rounded-xl border border-stone-300 focus:outline-none focus:ring-2 focus:ring-amber-600 bg-white">
                                     </div>
                                 </div>
@@ -270,7 +270,7 @@
 
     </main>
 
-    <!-- Bottom Navigation Bar (Preserved as requested) -->
+    <!-- Bottom Navigation Bar -->
     <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-stone-200 shadow-lg z-40">
         <div class="max-w-lg mx-auto grid grid-cols-3 py-2 text-center text-xs">
             <button onclick="switchTab('bookings')" id="nav-bookings" class="flex flex-col items-center justify-center text-amber-800 font-bold space-y-1">
@@ -305,6 +305,32 @@
             syncFromGoogleCalendar();
         });
 
+        // Helper calculations for dynamic payments
+        function getPaidTillNow(b) {
+            const initial = parseFloat(b.advanceAmount) || 0;
+            const extra = (b.payments || []).reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
+            return initial + extra;
+        }
+
+        function getBalanceDue(b) {
+            const total = parseFloat(b.totalAmount) || 0;
+            return Math.max(0, total - getPaidTillNow(b));
+        }
+
+        function normalizeClientName(name) {
+            return String(name || '')
+                .replace(/^(BOOKED:|HOLD:)\s*/i, '')
+                .replace(/\s*\([^)]*\)\s*$/, '')
+                .trim()
+                .toLowerCase();
+        }
+
+        function extractAppLocalId(description) {
+            if (!description) return null;
+            const match = description.match(/App Local ID:\s*([^\n]+)/i);
+            return match ? match[1].trim() : null;
+        }
+
         async function syncFromGoogleCalendar() {
             try {
                 const url = APPS_SCRIPT_URL + '?t=' + Date.now();
@@ -317,47 +343,55 @@
 
                 remoteEvents.forEach(evt => {
                     const gcalId = 'gcal_' + evt.id;
-                    const evtDate = evt.date;
+                    const evtDate = evt.date ? evt.date.trim().split('T')[0] : '';
+                    const descAppId = extractAppLocalId(evt.description);
 
-                    const exists = bookings.some(b =>
-                        b.id === gcalId ||
-                        (b.date && b.date.trim().split('T')[0] === evtDate &&
-                         (b.clientName === evt.title || (evt.title && evt.title.includes(b.clientName))))
-                    );
+                    let parsedClientName = evt.title
+                        ? evt.title.replace(/^(BOOKED:|HOLD:)\s*/i, '').trim()
+                        : 'Google Calendar Event';
+                    let phone = 'N/A';
+                    let hallLevel = 'Full Venue';
+                    let slot = 'Full Day';
+                    let decor = 'Standard Flower Arch (Default)';
+                    let total = 0;
+                    let advance = 0;
+
+                    let status = 'Calendar Locked';
+                    if (evt.status === 'HOLD' || (evt.title && evt.title.toUpperCase().includes('HOLD'))) {
+                        status = 'Inquiry / Tentative';
+                    }
+
+                    if (evt.description && evt.description.includes('SRI POORNA ANUGRAHA')) {
+                        const lines = evt.description.split('\n');
+                        lines.forEach(line => {
+                            if (line.startsWith('Customer Name:')) parsedClientName = line.replace('Customer Name:', '').trim();
+                            if (line.startsWith('Phone Number:')) phone = line.replace('Phone Number:', '').trim();
+                            if (line.startsWith('Hall Level:')) hallLevel = line.replace('Hall Level:', '').trim();
+                            if (line.startsWith('Time Slot:')) slot = line.replace('Time Slot:', '').trim();
+                            if (line.startsWith('Stage Decor:')) decor = line.replace('Stage Decor:', '').trim();
+                            if (line.startsWith('Total Rent: ₹')) total = parseFloat(line.replace('Total Rent: ₹', '').trim()) || 0;
+                            if (line.startsWith('Advance Paid: ₹')) advance = parseFloat(line.replace('Advance Paid: ₹', '').trim()) || 0;
+                            if (line.startsWith('Payment Status:')) status = line.replace('Payment Status:', '').trim();
+                        });
+                    }
+
+                    const normalizedEvtName = normalizeClientName(parsedClientName);
+
+                    const exists = bookings.some(b => {
+                        if (b.id === gcalId || (descAppId && b.id === descAppId)) {
+                            return true;
+                        }
+                        const bDate = b.date ? b.date.trim().split('T')[0] : '';
+                        if (bDate && evtDate && bDate === evtDate) {
+                            return normalizeClientName(b.clientName) === normalizedEvtName && b.status === status;
+                        }
+                        return false;
+                    });
 
                     if (!exists) {
-                        let clientName = evt.title ? evt.title.replace('BOOKED:', '').replace('HOLD:', '').trim() : 'Google Calendar Event';
-                        let phone = 'N/A';
-                        let hallLevel = 'Full Venue';
-                        let slot = 'Full Day';
-                        let decor = 'Standard Flower Arch (Default)';
-                        let total = 0;
-                        let advance = 0;
-                        let balance = 0;
-
-                        let status = 'Calendar Locked';
-                        if (evt.status === 'HOLD' || (evt.title && evt.title.toUpperCase().includes('HOLD'))) {
-                            status = 'Inquiry / Tentative';
-                        }
-
-                        if (evt.description && evt.description.includes('SRI POORNA ANUGRAHA')) {
-                            const lines = evt.description.split('\n');
-                            lines.forEach(line => {
-                                if (line.startsWith('Customer Name:')) clientName = line.replace('Customer Name:', '').trim();
-                                if (line.startsWith('Phone Number:')) phone = line.replace('Phone Number:', '').trim();
-                                if (line.startsWith('Hall Level:')) hallLevel = line.replace('Hall Level:', '').trim();
-                                if (line.startsWith('Time Slot:')) slot = line.replace('Time Slot:', '').trim();
-                                if (line.startsWith('Stage Decor:')) decor = line.replace('Stage Decor:', '').trim();
-                                if (line.startsWith('Total Rent: ₹')) total = parseFloat(line.replace('Total Rent: ₹', '').trim()) || 0;
-                                if (line.startsWith('Advance Paid: ₹')) advance = parseFloat(line.replace('Advance Paid: ₹', '').trim()) || 0;
-                                if (line.startsWith('Balance Due: ₹')) balance = parseFloat(line.replace('Balance Due: ₹', '').trim()) || 0;
-                                if (line.startsWith('Payment Status:')) status = line.replace('Payment Status:', '').trim();
-                            });
-                        }
-
                         const newSyncedBooking = {
                             id: gcalId,
-                            clientName: clientName,
+                            clientName: parsedClientName,
                             clientPhone: phone,
                             level: hallLevel,
                             date: evt.date,
@@ -365,7 +399,7 @@
                             decor: decor,
                             totalAmount: total,
                             advanceAmount: advance,
-                            balanceAmount: balance || (total - advance),
+                            payments: [],
                             status: status
                         };
 
@@ -429,7 +463,7 @@
             listEl.innerHTML = filtered.map(b => {
                 const isSelected = b.id === selectedBookingId;
                 let badgeColor = 'bg-amber-100 text-amber-800';
-                if (b.status === 'Fully Paid') badgeColor = 'bg-emerald-100 text-emerald-800';
+                if (b.status === 'Fully Paid' || getBalanceDue(b) === 0) badgeColor = 'bg-emerald-100 text-emerald-800';
                 if (b.status === 'Inquiry / Tentative') badgeColor = 'bg-yellow-100 text-yellow-900';
 
                 return `<div onclick="selectBooking('${b.id}')" class="p-3.5 cursor-pointer transition border-l-4 ${isSelected ? 'bg-amber-50/80 border-amber-800' : 'hover:bg-stone-50 border-transparent'}">
@@ -458,7 +492,6 @@
 
             renderBookings();
 
-            // Handle mobile view pane switching
             if (window.innerWidth < 768) {
                 document.getElementById('bookingListPane').classList.add('hidden');
                 document.getElementById('bookingDetailPane').classList.remove('hidden');
@@ -481,8 +514,11 @@
                 return;
             }
 
+            const paidTillNow = getPaidTillNow(b);
+            const balanceDue = getBalanceDue(b);
+
             let badgeColor = 'bg-amber-100 text-amber-800';
-            if (b.status === 'Fully Paid') badgeColor = 'bg-emerald-100 text-emerald-800';
+            if (b.status === 'Fully Paid' || balanceDue === 0) badgeColor = 'bg-emerald-100 text-emerald-800';
             if (b.status === 'Inquiry / Tentative') badgeColor = 'bg-yellow-100 text-yellow-900 border border-yellow-300';
 
             container.innerHTML = `
@@ -519,6 +555,7 @@
                         </div>
                     </div>
 
+                    <!-- 4-ROW FINANCIAL BREAKDOWN -->
                     <div class="bg-white p-3.5 rounded-xl border border-stone-200 space-y-2 text-xs">
                         <div class="flex justify-between border-b border-stone-100 pb-1.5">
                             <span class="text-stone-500">Total Rent:</span>
@@ -528,13 +565,34 @@
                             <span class="text-stone-500">Advance Received:</span>
                             <span class="font-bold text-emerald-700">₹${b.advanceAmount}</span>
                         </div>
-                        <div class="flex justify-between">
+                        <div class="flex justify-between border-b border-stone-100 pb-1.5 bg-sky-50/60 p-1.5 rounded-lg -mx-1.5">
+                            <span class="text-sky-900 font-semibold">Paid Till Now:</span>
+                            <span class="font-black text-sky-900">₹${paidTillNow}</span>
+                        </div>
+                        <div class="flex justify-between pt-0.5">
                             <span class="text-stone-500">Balance Due:</span>
-                            <span class="font-bold text-rose-600">₹${b.balanceAmount}</span>
+                            <span class="font-bold text-rose-600">₹${balanceDue}</span>
                         </div>
                     </div>
 
+                    <!-- INSTALLMENTS HISTORY LIST -->
+                    ${(b.payments && b.payments.length > 0) ? `
+                        <div class="bg-white p-3 rounded-xl border border-stone-100 space-y-1.5 text-xs">
+                            <span class="text-[10px] font-bold text-stone-400 uppercase tracking-wider">Subsequent Installments</span>
+                            ${b.payments.map((p, idx) => `
+                                <div class="flex justify-between text-stone-600 border-t border-stone-50 pt-1">
+                                    <span>#${idx + 1} (${p.date}) ${p.note ? `- ${escapeHtml(p.note)}` : ''}</span>
+                                    <span class="font-semibold text-emerald-800">+₹${p.amount}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+
                     <div class="flex items-center gap-2 pt-1">
+                        <button onclick="addPaymentPrompt('${b.id}')" class="bg-sky-600 hover:bg-sky-700 text-white font-semibold px-3 py-2 rounded-xl text-xs flex items-center gap-1 shadow">
+                            <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                            <span>+ Payment</span>
+                        </button>
                         <button onclick="shareWhatsAppBooking('${b.id}')" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow">
                             <i data-lucide="message-circle" class="w-4 h-4"></i>
                             <span>WhatsApp Receipt</span>
@@ -552,6 +610,61 @@
             `;
 
             lucide.createIcons();
+        }
+
+        async function addPaymentPrompt(id) {
+            const b = bookings.find(item => item.id === id);
+            if (!b) return;
+
+            const currentBalance = getBalanceDue(b);
+            const input = prompt(`Record new installment payment for ${b.clientName}:\n(Current Balance Due: ₹${currentBalance})`, currentBalance > 0 ? currentBalance : '');
+            if (!input) return;
+
+            const amount = parseFloat(input);
+            if (isNaN(amount) || amount <= 0) {
+                alert('Please enter a valid payment amount.');
+                return;
+            }
+
+            const today = new Date().toISOString().slice(0, 10);
+            if (!b.payments) b.payments = [];
+            b.payments.push({ amount: amount, date: today });
+
+            const newBalance = getBalanceDue(b);
+            if (newBalance === 0 && b.status !== 'Inquiry / Tentative') {
+                b.status = 'Fully Paid';
+            }
+
+            saveData();
+            renderBookings();
+            renderCalendar();
+            updateFinancialStats();
+
+            // Sync updated total/balance to Google Calendar
+            try {
+                await fetch(APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        id: b.id,
+                        clientName: b.clientName,
+                        clientPhone: b.clientPhone,
+                        level: b.level,
+                        date: b.date,
+                        timeSlot: b.timeSlot,
+                        decor: b.decor,
+                        totalAmount: b.totalAmount,
+                        advanceAmount: b.advanceAmount,
+                        paidTillNow: getPaidTillNow(b),
+                        balanceAmount: newBalance,
+                        status: b.status
+                    })
+                });
+                alert(`✅ Recorded ₹${amount} payment! Paid till now: ₹${getPaidTillNow(b)}. Remaining balance: ₹${newBalance}.`);
+            } catch (err) {
+                alert('✅ Saved locally (will sync when online).');
+            }
         }
 
         function openFormNewBooking() {
@@ -590,6 +703,18 @@
             const total = parseFloat(document.getElementById('totalAmount').value) || 0;
             const advance = parseFloat(document.getElementById('advanceAmount').value) || 0;
 
+            const existingBooking = editingId ? bookings.find(b => b.id === editingId) : null;
+            const existingPayments = existingBooking ? (existingBooking.payments || []) : [];
+
+            const tempBooking = {
+                totalAmount: total,
+                advanceAmount: advance,
+                payments: existingPayments
+            };
+
+            const paidTillNow = getPaidTillNow(tempBooking);
+            const balanceDue = getBalanceDue(tempBooking);
+
             const bookingData = {
                 id: editingId ? editingId : Date.now().toString(),
                 clientName: document.getElementById('clientName').value.trim(),
@@ -600,8 +725,8 @@
                 decor: document.getElementById('decorOption').value,
                 totalAmount: total,
                 advanceAmount: advance,
-                balanceAmount: total - advance,
-                status: isInquiry ? 'Inquiry / Tentative' : ((total - advance <= 0) ? 'Fully Paid' : 'Advance Locked')
+                payments: existingPayments,
+                status: isInquiry ? 'Inquiry / Tentative' : ((balanceDue <= 0) ? 'Fully Paid' : 'Advance Locked')
             };
 
             if (editingId) {
@@ -626,7 +751,11 @@
                     method: 'POST',
                     mode: 'no-cors',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(bookingData)
+                    body: JSON.stringify({
+                        ...bookingData,
+                        paidTillNow: paidTillNow,
+                        balanceAmount: balanceDue
+                    })
                 });
                 alert(isInquiry ? '✅ Inquiry saved & synced to Google Calendar!' : '✅ Booking confirmed & synced to Google Calendar!');
             } catch (err) {
@@ -715,16 +844,16 @@
 
         function showDateDetails(dateStr) {
             const dayBookings = bookings.filter(b => b.date && b.date.trim().split('T')[0] === dateStr);
-            let msg = "📅 Bookings for " + dateStr + ":\n\n";
+            let msg = "📅 Records for " + dateStr + ":\n\n";
             dayBookings.forEach(b => {
-                msg += "• " + b.clientName + " (" + b.level + ")\n  Slot: " + b.timeSlot + "\n  Status: " + b.status + "\n\n";
+                msg += "• " + b.clientName + " (" + b.level + ")\n  Slot: " + b.timeSlot + "\n  Status: " + b.status + "\n  Paid Till Now: ₹" + getPaidTillNow(b) + "\n\n";
             });
             alert(msg);
         }
 
         function updateFinancialStats() {
-            const collected = bookings.reduce((sum, b) => sum + (b.status !== 'Inquiry / Tentative' ? (b.advanceAmount || 0) : 0), 0);
-            const pending = bookings.reduce((sum, b) => sum + (b.status !== 'Inquiry / Tentative' ? (b.balanceAmount || 0) : 0), 0);
+            const collected = bookings.reduce((sum, b) => sum + (b.status !== 'Inquiry / Tentative' ? getPaidTillNow(b) : 0), 0);
+            const pending = bookings.reduce((sum, b) => sum + (b.status !== 'Inquiry / Tentative' ? getBalanceDue(b) : 0), 0);
             document.getElementById('statCollected').innerText = `₹${collected.toLocaleString()}`;
             document.getElementById('statPending').innerText = `₹${pending.toLocaleString()}`;
         }
@@ -773,9 +902,9 @@
                 alert('No booking data to export.');
                 return;
             }
-            const headers = ['ID', 'Customer Name', 'Phone', 'Hall Level', 'Date', 'Time Slot', 'Decor', 'Total Amount', 'Advance', 'Balance', 'Status'];
+            const headers = ['ID', 'Customer Name', 'Phone', 'Hall Level', 'Date', 'Time Slot', 'Decor', 'Total Amount', 'Advance', 'Paid Till Now', 'Balance', 'Status'];
             const rows = bookings.map(b => [
-                b.id, `"${b.clientName}"`, `"${b.clientPhone}"`, `"${b.level}"`, b.date, `"${b.timeSlot}"`, `"${b.decor}"`, b.totalAmount, b.advanceAmount, b.balanceAmount, b.status
+                b.id, `"${b.clientName}"`, `"${b.clientPhone}"`, `"${b.level}"`, b.date, `"${b.timeSlot}"`, `"${b.decor}"`, b.totalAmount, b.advanceAmount, getPaidTillNow(b), getBalanceDue(b), b.status
             ]);
 
             const csvContent = "data:text/csv;charset=utf-8," + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
@@ -798,7 +927,8 @@
                          "*Decor:* " + b.decor + "\n\n" +
                          "*Total Amount:* ₹" + b.totalAmount + "\n" +
                          "*Advance Paid:* ₹" + b.advanceAmount + "\n" +
-                         "*Balance Due:* ₹" + b.balanceAmount + "\n\n" +
+                         "*Paid Till Now:* ₹" + getPaidTillNow(b) + "\n" +
+                         "*Balance Due:* ₹" + getBalanceDue(b) + "\n\n" +
                          "Thank you for booking with us!";
 
             window.open(`https://wa.me/91${b.clientPhone}?text=${encodeURIComponent(text)}`, '_blank');

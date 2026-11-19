@@ -4,13 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Sri Poorna Anugraha Hall Manager</title>
-    
+
     <!-- PWA & Mobile Engine Settings -->
     <meta name="theme-color" content="#7c5400">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Hall Manager">
-    
+
     <!-- Embedded Custom SVG App Icon -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%237c5400'/><text y='68' x='50' font-size='55' text-anchor='middle'>🏛️</text></svg>">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%237c5400'/><text y='68' x='50' font-size='55' text-anchor='middle'>🏛️</text></svg>">
@@ -34,7 +34,7 @@
     <!-- Tailwind CSS (CDN) & Lucide Icons -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    
+
     <style>
         body { -webkit-tap-highlight-color: transparent; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -63,7 +63,7 @@
 
         <!-- Tab 1: Bookings View -->
         <section id="tab-bookings" class="tab-content space-y-5">
-            
+
             <!-- Add / Edit Booking Form Card -->
             <div class="bg-white rounded-2xl p-5 shadow-sm border border-stone-200 space-y-4">
                 <div class="flex items-center justify-between border-b border-stone-100 pb-3">
@@ -76,7 +76,7 @@
 
                 <form id="bookingForm" onsubmit="handleFormSubmit(event)" class="space-y-4">
                     <input type="hidden" id="editingId" value="">
-                    
+
                     <!-- Client Details -->
                     <div class="space-y-3">
                         <div>
@@ -188,7 +188,7 @@
                     <!-- Calendar Rendered Here -->
                 </div>
             </div>
-            
+
             <div class="bg-amber-100/60 border border-amber-200 rounded-xl p-3.5 text-xs text-amber-900 space-y-1">
                 <p class="font-bold flex items-center gap-1.5">
                     <i data-lucide="info" class="w-4 h-4 text-amber-700"></i>
@@ -264,13 +264,20 @@
                 const url = APPS_SCRIPT_URL + '?t=' + Date.now();
                 const response = await fetch(url);
                 const remoteEvents = await response.json();
-                
+
                 if (!Array.isArray(remoteEvents)) return;
 
                 let hasNewSync = false;
 
                 remoteEvents.forEach(evt => {
-                    const exists = bookings.some(b => b.date && b.date.trim().split('T')[0] === evt.date);
+                    const gcalId = 'gcal_' + evt.id;
+                    const evtDate = evt.date;
+
+                    const exists = bookings.some(b =>
+                        b.id === gcalId ||
+                        (b.date && b.date.trim().split('T')[0] === evtDate &&
+                         (b.clientName === evt.title || (evt.title && evt.title.includes(b.clientName))))
+                    );
 
                     if (!exists) {
                         let clientName = evt.title ? evt.title.replace('BOOKED:', '').replace('HOLD:', '').trim() : 'Google Calendar Event';
@@ -281,7 +288,7 @@
                         let total = 0;
                         let advance = 0;
                         let balance = 0;
-                        
+
                         let status = 'Calendar Locked';
                         if (evt.status === 'HOLD' || (evt.title && evt.title.toUpperCase().includes('HOLD'))) {
                             status = 'Inquiry / Tentative';
@@ -303,7 +310,7 @@
                         }
 
                         const newSyncedBooking = {
-                            id: 'gcal_' + evt.id,
+                            id: gcalId,
                             clientName: clientName,
                             clientPhone: phone,
                             level: hallLevel,
@@ -345,9 +352,9 @@
                     btn.className = "flex flex-col items-center justify-center text-stone-400 font-medium space-y-1";
                 }
             });
-            
-            if(tabName === 'calendar') renderCalendar();
-            if(tabName === 'ledger') updateFinancialStats();
+
+            if (tabName === 'calendar') renderCalendar();
+            if (tabName === 'ledger') updateFinancialStats();
         }
 
         async function handleFormSubmit(e) {
@@ -399,7 +406,7 @@
             updateFinancialStats();
 
             try {
-                fetch(APPS_SCRIPT_URL, {
+                await fetch(APPS_SCRIPT_URL, {
                     method: 'POST',
                     mode: 'no-cors',
                     headers: { 'Content-Type': 'application/json' },
@@ -485,7 +492,7 @@
                     '</div>' +
                 '</div>';
             }).join('');
-            
+
             lucide.createIcons();
         }
 
@@ -514,7 +521,7 @@
 
             for (let day = 1; day <= daysInMonth; day++) {
                 const targetDateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                
+
                 const dayBookings = bookings.filter(b => {
                     if (!b.date) return false;
                     const cleanStoredDate = b.date.trim().split('T')[0];
@@ -551,40 +558,35 @@
             document.getElementById('statPending').innerText = `₹${pending.toLocaleString()}`;
         }
 
-    async function deleteBooking(id) {
-    const targetBooking = bookings.find(b => b.id === id);
-    if (!targetBooking) return;
+        async function deleteBooking(id) {
+            const targetBooking = bookings.find(b => b.id === id);
+            if (!targetBooking) return;
 
-    // 1. Native confirm modal naturally pauses execution while open
-    const confirmed = confirm(`Delete booking for "${targetBooking.clientName}" on ${targetBooking.date} permanently?`);
-    if (!confirmed) return;
+            const confirmed = confirm(`Delete booking for "${targetBooking.clientName}" on ${targetBooking.date} permanently?`);
+            if (!confirmed) return;
 
-    // 2. Immediate local state & UI cleanup
-    bookings = bookings.filter(b => b.id !== id);
-    saveData();
-    renderBookings();
-    renderCalendar();
-    updateFinancialStats();
+            bookings = bookings.filter(b => b.id !== id);
+            saveData();
+            renderBookings();
+            renderCalendar();
+            updateFinancialStats();
 
-    // 3. Non-blocking asynchronous network call
-    try {
-        console.log('Sending DELETE request for ID:', targetBooking.id);
-        await fetch(APPS_SCRIPT_URL, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                action: 'DELETE',
-                id: targetBooking.id,
-                clientName: targetBooking.clientName,
-                date: targetBooking.date
-            })
-        });
-        console.log('DELETE payload successfully dispatched to Google Apps Script.');
-    } catch (err) {
-        console.error('Failed to sync deletion with Google Calendar:', err);
-    }
-}
+            try {
+                await fetch(APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'DELETE',
+                        id: targetBooking.id,
+                        clientName: targetBooking.clientName,
+                        date: targetBooking.date
+                    })
+                });
+            } catch (err) {
+                console.error('Failed to sync deletion with Google Calendar:', err);
+            }
+        }
 
         function saveData() {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(bookings));
@@ -625,7 +627,7 @@
                          "*Advance Paid:* ₹" + b.advanceAmount + "\n" +
                          "*Balance Due:* ₹" + b.balanceAmount + "\n\n" +
                          "Thank you for booking with us!";
-            
+
             window.open(`https://wa.me/91${b.clientPhone}?text=${encodeURIComponent(text)}`, '_blank');
         }
 

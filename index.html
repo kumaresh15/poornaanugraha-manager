@@ -4,17 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Sri Poorna Anugraha Hall Manager</title>
-    <meta name="robots" content="noindex, nofollow">
-    
+
     <!-- PWA & Mobile Engine Settings -->
     <meta name="theme-color" content="#7c5400">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Hall Manager">
-    
+
     <!-- Embedded Custom SVG App Icon -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%237c5400'/><text y='68' x='50' font-size='55' text-anchor='middle'>🏛️</text></svg>">
-   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%237c5400'/><text y='68' x='50' font-size='55' text-anchor='middle'>🏛️</text></svg>">
 
     <!-- Web App Manifest -->
     <link rel="manifest" href="/manifest.json">
@@ -22,7 +21,7 @@
     <!-- Tailwind CSS (CDN) & Lucide Icons -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    
+
     <style>
         body { -webkit-tap-highlight-color: transparent; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -87,14 +86,12 @@
     <!-- Main Container -->
     <main class="max-w-6xl mx-auto p-3 sm:p-5">
 
-        <!-- Tab 1: Bookings View (WhatsApp Dual-Pane Layout) -->
+        <!-- Tab 1: Bookings View (Dual-Pane Layout) -->
         <section id="tab-bookings" class="tab-content">
             <div class="grid grid-cols-1 md:grid-cols-12 gap-4 h-[calc(100vh-140px)] min-h-[550px]">
 
-                <!-- LEFT PANE: Booking Log List (WhatsApp Chat List Style) -->
+                <!-- LEFT PANE: Booking Log List -->
                 <div id="bookingListPane" class="md:col-span-5 lg:col-span-4 bg-white rounded-2xl border border-stone-200 shadow-sm flex flex-col overflow-hidden">
-                    
-                    <!-- Search & Action Bar -->
                     <div class="p-3 border-b border-stone-100 bg-stone-50/50 space-y-2">
                         <div class="flex items-center justify-between">
                             <h3 class="font-bold text-stone-800 text-sm flex items-center gap-2">
@@ -114,16 +111,11 @@
                         </div>
                     </div>
 
-                    <!-- Scrollable Booking List -->
-                    <div id="bookingList" class="flex-1 overflow-y-auto divide-y divide-stone-100 no-scrollbar">
-                        <!-- Dynamic Item Cards Injected Here -->
-                    </div>
+                    <div id="bookingList" class="flex-1 overflow-y-auto divide-y divide-stone-100 no-scrollbar"></div>
                 </div>
 
                 <!-- RIGHT PANE: Detail View / Form Editor Pane -->
                 <div id="bookingDetailPane" class="hidden md:flex md:col-span-7 lg:col-span-8 bg-white rounded-2xl border border-stone-200 shadow-sm flex-col overflow-hidden">
-                    
-                    <!-- Top Action Bar for Detail Pane -->
                     <div class="p-3.5 border-b border-stone-100 bg-stone-50/80 flex items-center justify-between">
                         <div class="flex items-center gap-2">
                             <button onclick="showListPaneMobile()" class="md:hidden text-amber-800 font-bold text-xs flex items-center gap-1 bg-amber-100 px-2.5 py-1.5 rounded-lg">
@@ -141,15 +133,9 @@
                         </button>
                     </div>
 
-                    <!-- Detail Pane Content Container -->
                     <div class="flex-1 overflow-y-auto p-4 space-y-4 no-scrollbar">
-                        
-                        <!-- 1. Display Selected Log Details -->
-                        <div id="selectedLogView" class="space-y-4">
-                            <!-- Injected dynamically when a log is selected -->
-                        </div>
+                        <div id="selectedLogView" class="space-y-4"></div>
 
-                        <!-- 2. Form Editor View -->
                         <div id="formView" class="hidden bg-stone-50/50 rounded-2xl p-4 border border-stone-200 space-y-4">
                             <div class="flex items-center justify-between border-b border-stone-200 pb-3">
                                 <h3 id="formTitle" class="font-bold text-stone-800 text-sm flex items-center gap-2">
@@ -161,7 +147,7 @@
 
                             <form id="bookingForm" onsubmit="handleFormSubmit(event)" class="space-y-4">
                                 <input type="hidden" id="editingId" value="">
-                                
+
                                 <div class="space-y-3">
                                     <div>
                                         <label class="block text-xs font-semibold text-stone-600 mb-1">Customer Name *</label>
@@ -230,12 +216,12 @@
 
                                 <div class="flex items-center gap-2 pt-1 bg-amber-50/60 p-3 rounded-xl border border-amber-200">
                                     <input type="checkbox" id="isInquiry" class="w-4 h-4 text-amber-800 rounded border-stone-300 focus:ring-amber-600">
-                                    <label for="isInquiry" class="text-xs font-semibold text-amber-900 cursor-pointer">Mark as Inquiry / Tentative (Displays as "In Demand" on website)</label>
+                                    <label for="isInquiry" class="text-xs font-semibold text-amber-900 cursor-pointer">Mark as Inquiry / Tentative (Excluded from confirmed Google Sheet)</label>
                                 </div>
 
                                 <button type="submit" id="submitBtn" class="w-full bg-amber-800 hover:bg-amber-900 active:bg-amber-950 text-white font-semibold py-2.5 rounded-xl shadow-md flex items-center justify-center gap-2 text-xs transition">
                                     <i data-lucide="check-circle-2" class="w-4 h-4"></i>
-                                    <span>Save & Sync to Google Calendar</span>
+                                    <span>Save & Sync to Calendar & Sheet</span>
                                 </button>
                             </form>
                         </div>
@@ -255,11 +241,9 @@
                     </h2>
                     <input type="month" id="calendarMonth" onchange="renderCalendar()" class="text-xs border border-stone-300 rounded-lg px-2 py-1 bg-stone-50">
                 </div>
-                <div id="calendarGrid" class="grid grid-cols-7 gap-1 text-center text-xs pt-2">
-                    <!-- Calendar Rendered Here -->
-                </div>
+                <div id="calendarGrid" class="grid grid-cols-7 gap-1 text-center text-xs pt-2"></div>
             </div>
-            
+
             <div class="bg-amber-100/60 border border-amber-200 rounded-xl p-3.5 text-xs text-amber-900 space-y-1">
                 <p class="font-bold flex items-center gap-1.5">
                     <i data-lucide="info" class="w-4 h-4 text-amber-700"></i>
@@ -267,36 +251,52 @@
                 </p>
                 <p>• Level 1 Hall: Seating capacity ~60 people (Non-AC)</p>
                 <p>• Level 2 Hall: Seating capacity ~100 people (Non-AC)</p>
-                <p>• Dining Area: Seats 20-25 simultaneously (Staircase access only)</p>
+                <p>• Dining Area: Seats 20–25 simultaneously (Staircase access only, no lift)</p>
             </div>
         </section>
 
-        <!-- Tab 3: Financial Summary View -->
-        <section id="tab-ledger" class="tab-content hidden space-y-4 max-w-lg mx-auto">
-            <div class="grid grid-cols-2 gap-3">
-                <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 text-emerald-900">
-                    <p class="text-xs font-semibold text-emerald-700">Total Collected</p>
-                    <p id="statCollected" class="text-xl font-black mt-1">₹0</p>
+        <!-- Tab 3: Linked Google Sheet View -->
+        <section id="tab-spreadsheet" class="tab-content hidden space-y-4">
+            <div class="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-stone-200 space-y-4">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-stone-100 pb-3">
+                    <div>
+                        <h2 class="font-bold text-stone-800 text-sm sm:text-base flex items-center gap-2">
+                            <i data-lucide="sheet" class="w-5 h-5 text-emerald-700"></i>
+                            <span>Synchronised Google Sheets</span>
+                        </h2>
+                        <p class="text-xs text-stone-500 mt-0.5">Confirmed bookings, edits, payments, and deletions sync via Apps Script to your Google Sheet.</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="reloadSheetFrame()" class="bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition">
+                            <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                            <span>Refresh Sheet</span>
+                        </button>
+                        <a id="openSheetExternalLink" href="https://docs.google.com/spreadsheets/d/1AcT_GZ3wJi5JupRtT-Y84KCsL1d6oLqPogxbkwvdHzo/edit?gid=0#gid=0" target="_blank" rel="noopener noreferrer" class="bg-emerald-700 hover:bg-emerald-800 text-white text-xs px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition">
+                            <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+                            <span>Open in Google Sheets</span>
+                        </a>
+                    </div>
                 </div>
-                <div class="bg-rose-50 border border-rose-200 rounded-2xl p-4 text-rose-900">
-                    <p class="text-xs font-semibold text-rose-700">Pending Balance</p>
-                    <p id="statPending" class="text-xl font-black mt-1">₹0</p>
-                </div>
-            </div>
 
-            <div class="bg-white rounded-2xl p-5 shadow-sm border border-stone-200 space-y-3">
-                <h3 class="font-bold text-stone-800 text-sm border-b border-stone-100 pb-2">Quick WhatsApp Share</h3>
-                <p class="text-xs text-stone-500">Generate customer confirmation note for official contact (9442071354).</p>
-                <button onclick="shareLatestBookingWhatsApp()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2.5 rounded-xl shadow text-xs flex items-center justify-center gap-2">
-                    <i data-lucide="message-circle" class="w-4 h-4"></i>
-                    <span>Share Selected/Latest Receipt via WhatsApp</span>
-                </button>
+                <form onsubmit="saveSheetUrl(event)" class="flex flex-col sm:flex-row gap-2">
+                    <input
+                        type="url"
+                        id="sheetUrlInput"
+                        placeholder="Paste your Google Sheets link (https://docs.google.com/spreadsheets/d/...)"
+                        class="flex-1 text-xs px-3.5 py-2 rounded-xl border border-stone-300 focus:outline-none focus:ring-2 focus:ring-amber-700 bg-stone-50"
+                    >
+                    <button type="submit" class="bg-amber-800 hover:bg-amber-900 text-white text-xs font-semibold px-4 py-2 rounded-xl transition">
+                        Save Sheet Link
+                    </button>
+                </form>
+
+                <div id="sheetEmbedContainer" class="rounded-xl border border-stone-200 overflow-hidden bg-stone-50 h-[calc(100vh-290px)] min-h-[420px] flex items-center justify-center"></div>
             </div>
         </section>
 
     </main>
 
-    <!-- Bottom Navigation Bar -->
+    <!-- Bottom Navigation Bar (3 Tabs: Bookings, Calendar, Spreadsheet) -->
     <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-stone-200 shadow-lg z-40">
         <div class="max-w-lg mx-auto grid grid-cols-3 py-2 text-center text-xs">
             <button onclick="switchTab('bookings')" id="nav-bookings" class="flex flex-col items-center justify-center text-amber-800 font-bold space-y-1">
@@ -307,9 +307,9 @@
                 <i data-lucide="calendar" class="w-5 h-5"></i>
                 <span>Calendar</span>
             </button>
-            <button onclick="switchTab('ledger')" id="nav-ledger" class="flex flex-col items-center justify-center text-stone-400 font-medium space-y-1">
-                <i data-lucide="wallet" class="w-5 h-5"></i>
-                <span>Accounts</span>
+            <button onclick="switchTab('spreadsheet')" id="nav-spreadsheet" class="flex flex-col items-center justify-center text-stone-400 font-medium space-y-1">
+                <i data-lucide="sheet" class="w-5 h-5"></i>
+                <span>Spreadsheet</span>
             </button>
         </div>
     </nav>
@@ -318,6 +318,9 @@
     <script>
         const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx3MCfhyHvjPCBxt6FZNZRZX0-D1kIDzNctReSxulWsvTyGZ7o5NXK1ZDHPXwD3MqBqFA/exec';
 
+        const DEFAULT_GOOGLE_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1AcT_GZ3wJi5JupRtT-Y84KCsL1d6oLqPogxbkwvdHzo/edit?gid=0#gid=0';
+        const SHEET_URL_STORAGE_KEY = 'spa_mini_hall_google_sheet_url';
+
         // SHA-256 hash for configured 6-digit PIN
         const EXPECTED_PIN_HASH = '6cafd0b6de0346b572be977707f73c182db9a15a4de33628c3417833ff2dd233';
         const PIN_SESSION_KEY = 'spa_mini_hall_unlocked_v1';
@@ -325,6 +328,10 @@
         const STORAGE_KEY = 'spa_mini_hall_bookings_db';
         let bookings = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
         let selectedBookingId = null;
+
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js').catch(err => console.log('SW reg error:', err));
+        }
 
         async function sha256Hex(text) {
             const data = new TextEncoder().encode(text);
@@ -378,13 +385,61 @@
             lucide.createIcons();
             checkPinSession();
             setDefaultMonth();
+            initSheetTab();
             renderBookings();
             renderCalendar();
-            updateFinancialStats();
             syncFromGoogleCalendar();
         });
 
-        // Helper calculations for dynamic payments
+        function toEmbeddableSheetUrl(rawUrl) {
+            if (!rawUrl) return '';
+            const trimmed = rawUrl.trim();
+            const match = trimmed.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+            if (match && match[1]) {
+                const gidMatch = trimmed.match(/[?&#]gid=([0-9]+)/);
+                const gidParam = gidMatch ? `?gid=${gidMatch[1]}&rm=minimal` : '?rm=minimal';
+                return `https://docs.google.com/spreadsheets/d/${match[1]}/edit${gidParam}`;
+            }
+            return trimmed;
+        }
+
+        function initSheetTab() {
+            const savedUrl = localStorage.getItem(SHEET_URL_STORAGE_KEY) || DEFAULT_GOOGLE_SHEET_URL;
+            const inputEl = document.getElementById('sheetUrlInput');
+            if (inputEl && savedUrl) {
+                inputEl.value = savedUrl;
+            }
+            renderSheetFrame(savedUrl);
+        }
+
+        function saveSheetUrl(e) {
+            e.preventDefault();
+            const url = document.getElementById('sheetUrlInput').value.trim();
+            if (!url) return;
+            localStorage.setItem(SHEET_URL_STORAGE_KEY, url);
+            renderSheetFrame(url);
+        }
+
+        function reloadSheetFrame() {
+            const url = localStorage.getItem(SHEET_URL_STORAGE_KEY) || document.getElementById('sheetUrlInput').value.trim() || DEFAULT_GOOGLE_SHEET_URL;
+            renderSheetFrame(url);
+        }
+
+        function renderSheetFrame(rawUrl) {
+            const container = document.getElementById('sheetEmbedContainer');
+            const externalLink = document.getElementById('openSheetExternalLink');
+
+            if (!rawUrl) {
+                externalLink.href = 'https://docs.google.com/spreadsheets/';
+                container.innerHTML = '<p class="text-xs text-stone-500 p-6 text-center">Paste your Google Sheets URL above and click <strong>Save Sheet Link</strong> to display your spreadsheet here.</p>';
+                return;
+            }
+
+            externalLink.href = rawUrl;
+            const embedSrc = toEmbeddableSheetUrl(rawUrl);
+            container.innerHTML = `<iframe src="${escapeHtml(embedSrc)}" class="w-full h-full border-0" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>`;
+        }
+
         function getPaidTillNow(b) {
             const initial = parseFloat(b.advanceAmount) || 0;
             const extra = (b.payments || []).reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
@@ -468,7 +523,7 @@
                     });
 
                     if (!exists) {
-                        const newSyncedBooking = {
+                        bookings.push({
                             id: gcalId,
                             clientName: parsedClientName,
                             clientPhone: phone,
@@ -480,9 +535,7 @@
                             advanceAmount: advance,
                             payments: [],
                             status: status
-                        };
-
-                        bookings.push(newSyncedBooking);
+                        });
                         hasNewSync = true;
                     }
                 });
@@ -491,7 +544,6 @@
                     saveData();
                     renderBookings();
                     renderCalendar();
-                    updateFinancialStats();
                 }
             } catch (err) {
                 console.log('GCal Sync skipped:', err);
@@ -502,7 +554,7 @@
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.getElementById(`tab-${tabName}`).classList.remove('hidden');
 
-            const navs = ['bookings', 'calendar', 'ledger'];
+            const navs = ['bookings', 'calendar', 'spreadsheet'];
             navs.forEach(nav => {
                 const btn = document.getElementById(`nav-${nav}`);
                 if (nav === tabName) {
@@ -513,14 +565,13 @@
             });
 
             if (tabName === 'calendar') renderCalendar();
-            if (tabName === 'ledger') updateFinancialStats();
         }
 
         function renderBookings() {
             const listEl = document.getElementById('bookingList');
             const searchVal = (document.getElementById('searchInput').value || '').toLowerCase();
-            
-            const filtered = bookings.filter(b => 
+
+            const filtered = bookings.filter(b =>
                 (b.clientName || '').toLowerCase().includes(searchVal) ||
                 (b.clientPhone || '').toLowerCase().includes(searchVal) ||
                 (b.date || '').toLowerCase().includes(searchVal)
@@ -605,83 +656,49 @@
                     <div class="flex justify-between items-start border-b border-stone-200 pb-3">
                         <div>
                             <span class="text-[10px] font-bold text-amber-800 uppercase tracking-wider">Customer Record</span>
-                            <h2 class="text-lg font-bold text-stone-900 mt-0.5">${escapeHtml(b.clientName)}</h2>
-                            <p class="text-xs text-stone-600 flex items-center gap-1.5 mt-1">
-                                <i data-lucide="phone" class="w-3.5 h-3.5 text-amber-700"></i> ${escapeHtml(b.clientPhone)}
+                            <h4 class="font-bold text-stone-900 text-base">${escapeHtml(b.clientName)}</h4>
+                            <p class="text-xs text-stone-500 mt-0.5 flex items-center gap-1">
+                                <i data-lucide="phone" class="w-3 h-3 text-stone-400"></i> ${escapeHtml(b.clientPhone || 'N/A')}
                             </p>
                         </div>
-                        <span class="text-xs px-3 py-1 rounded-full font-semibold ${badgeColor}">
-                            ${b.status}
-                        </span>
+                        <span class="text-xs font-semibold px-2.5 py-1 rounded-full ${badgeColor}">${b.status}</span>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-3 text-xs">
-                        <div class="bg-white p-3 rounded-xl border border-stone-100 space-y-0.5">
-                            <span class="text-stone-400 font-medium text-[10px] uppercase">Hall Level</span>
-                            <p class="font-bold text-stone-800">${b.level}</p>
-                        </div>
-                        <div class="bg-white p-3 rounded-xl border border-stone-100 space-y-0.5">
-                            <span class="text-stone-400 font-medium text-[10px] uppercase">Booking Date</span>
-                            <p class="font-bold text-stone-800">${b.date}</p>
-                        </div>
-                        <div class="bg-white p-3 rounded-xl border border-stone-100 space-y-0.5">
-                            <span class="text-stone-400 font-medium text-[10px] uppercase">Time Slot</span>
-                            <p class="font-bold text-stone-800">${b.timeSlot}</p>
-                        </div>
-                        <div class="bg-white p-3 rounded-xl border border-stone-100 space-y-0.5">
-                            <span class="text-stone-400 font-medium text-[10px] uppercase">Stage Setup</span>
-                            <p class="font-bold text-stone-800 truncate">${b.decor}</p>
-                        </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs text-stone-700 bg-white p-3.5 rounded-xl border border-stone-100">
+                        <p><strong class="text-stone-500">Hall Level:</strong> ${escapeHtml(b.level)}</p>
+                        <p><strong class="text-stone-500">Date & Slot:</strong> ${b.date} (${escapeHtml(b.timeSlot)})</p>
+                        <p><strong class="text-stone-500">Stage Decor:</strong> ${escapeHtml(b.decor || 'Standard')}</p>
+                        <p><strong class="text-stone-500">Total Rent:</strong> ₹${Number(b.totalAmount || 0).toLocaleString('en-IN')}</p>
+                        <p><strong class="text-stone-500">Initial Advance:</strong> ₹${Number(b.advanceAmount || 0).toLocaleString('en-IN')}</p>
+                        <p><strong class="text-stone-500">Paid Till Now:</strong> <span class="text-emerald-700 font-bold">₹${paidTillNow.toLocaleString('en-IN')}</span></p>
+                        <p class="sm:col-span-2 border-t border-stone-100 pt-2"><strong class="text-stone-500">Balance Due:</strong> <span class="font-bold text-sm ${balanceDue > 0 ? 'text-rose-600' : 'text-emerald-700'}">₹${balanceDue.toLocaleString('en-IN')}</span></p>
                     </div>
 
-                    <!-- 4-ROW FINANCIAL BREAKDOWN -->
-                    <div class="bg-white p-3.5 rounded-xl border border-stone-200 space-y-2 text-xs">
-                        <div class="flex justify-between border-b border-stone-100 pb-1.5">
-                            <span class="text-stone-500">Total Rent:</span>
-                            <span class="font-bold text-stone-900">₹${b.totalAmount}</span>
-                        </div>
-                        <div class="flex justify-between border-b border-stone-100 pb-1.5">
-                            <span class="text-stone-500">Advance Received:</span>
-                            <span class="font-bold text-emerald-700">₹${b.advanceAmount}</span>
-                        </div>
-                        <div class="flex justify-between border-b border-stone-100 pb-1.5 bg-sky-50/60 p-1.5 rounded-lg -mx-1.5">
-                            <span class="text-sky-900 font-semibold">Paid Till Now:</span>
-                            <span class="font-black text-sky-900">₹${paidTillNow}</span>
-                        </div>
-                        <div class="flex justify-between pt-0.5">
-                            <span class="text-stone-500">Balance Due:</span>
-                            <span class="font-bold text-rose-600">₹${balanceDue}</span>
-                        </div>
-                    </div>
-
-                    <!-- INSTALLMENTS HISTORY LIST -->
                     ${(b.payments && b.payments.length > 0) ? `
-                        <div class="bg-white p-3 rounded-xl border border-stone-100 space-y-1.5 text-xs">
-                            <span class="text-[10px] font-bold text-stone-400 uppercase tracking-wider">Subsequent Installments</span>
-                            ${b.payments.map((p, idx) => `
-                                <div class="flex justify-between text-stone-600 border-t border-stone-50 pt-1">
-                                    <span>#${idx + 1} (${p.date}) ${p.note ? `- ${escapeHtml(p.note)}` : ''}</span>
-                                    <span class="font-semibold text-emerald-800">+₹${p.amount}</span>
-                                </div>
-                            `).join('')}
+                        <div class="bg-white p-3 rounded-xl border border-stone-100 space-y-1.5">
+                            <p class="text-[11px] font-bold text-stone-600 uppercase tracking-wide">Installment History</p>
+                            ${b.payments.map(p => `<div class="flex justify-between text-xs text-stone-700 border-b border-stone-50 pb-1 last:border-0">
+                                <span>${p.date}</span>
+                                <span class="font-semibold text-emerald-700">+₹${Number(p.amount || 0).toLocaleString('en-IN')}</span>
+                            </div>`).join('')}
                         </div>
                     ` : ''}
 
-                    <div class="flex items-center gap-2 pt-1">
-                        <button onclick="addPaymentPrompt('${b.id}')" class="bg-sky-600 hover:bg-sky-700 text-white font-semibold px-3 py-2 rounded-xl text-xs flex items-center gap-1 shadow">
-                            <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                    <div class="flex flex-wrap gap-2 pt-1">
+                        <button onclick="openEditForm('${b.id}')" class="bg-amber-800 hover:bg-amber-900 text-white text-xs font-semibold px-3.5 py-2 rounded-xl flex items-center gap-1.5 transition">
+                            <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+                            <span>Edit Booking</span>
+                        </button>
+                        <button onclick="addPayment('${b.id}')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3.5 py-2 rounded-xl flex items-center gap-1.5 transition">
+                            <i data-lucide="wallet" class="w-3.5 h-3.5"></i>
                             <span>+ Payment</span>
                         </button>
-                        <button onclick="shareWhatsAppBooking('${b.id}')" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow">
-                            <i data-lucide="message-circle" class="w-4 h-4"></i>
-                            <span>WhatsApp Receipt</span>
+                        <button onclick="sendWhatsAppReceipt('${b.id}')" class="bg-[#25D366] hover:bg-[#20bd5a] text-white text-xs font-semibold px-3.5 py-2 rounded-xl flex items-center gap-1.5 transition">
+                            <i data-lucide="message-circle" class="w-3.5 h-3.5"></i>
+                            <span>WhatsApp</span>
                         </button>
-                        <button onclick="editBooking('${b.id}')" class="bg-amber-100 hover:bg-amber-200 text-amber-900 font-semibold px-3 py-2 rounded-xl text-xs flex items-center gap-1">
-                            <i data-lucide="edit-3" class="w-4 h-4"></i>
-                            <span>Edit</span>
-                        </button>
-                        <button onclick="deleteBooking('${b.id}')" class="bg-rose-100 hover:bg-rose-200 text-rose-700 font-semibold px-3 py-2 rounded-xl text-xs flex items-center gap-1">
-                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        <button onclick="deleteBooking('${b.id}')" class="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-semibold px-3.5 py-2 rounded-xl flex items-center gap-1.5 transition ml-auto">
+                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                             <span>Delete</span>
                         </button>
                     </div>
@@ -691,71 +708,44 @@
             lucide.createIcons();
         }
 
-        async function addPaymentPrompt(id) {
-            const b = bookings.find(item => item.id === id);
-            if (!b) return;
-
-            const currentBalance = getBalanceDue(b);
-            const input = prompt(`Record new installment payment for ${b.clientName}:\n(Current Balance Due: ₹${currentBalance})`, currentBalance > 0 ? currentBalance : '');
-            if (!input) return;
-
-            const amount = parseFloat(input);
-            if (isNaN(amount) || amount <= 0) {
-                alert('Please enter a valid payment amount.');
-                return;
-            }
-
-            const today = new Date().toISOString().slice(0, 10);
-            if (!b.payments) b.payments = [];
-            b.payments.push({ amount: amount, date: today });
-
-            const newBalance = getBalanceDue(b);
-            if (newBalance === 0 && b.status !== 'Inquiry / Tentative') {
-                b.status = 'Fully Paid';
-            }
-
-            saveData();
-            renderBookings();
-            renderCalendar();
-            updateFinancialStats();
-
-            try {
-                await fetch(APPS_SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        id: b.id,
-                        clientName: b.clientName,
-                        clientPhone: b.clientPhone,
-                        level: b.level,
-                        date: b.date,
-                        timeSlot: b.timeSlot,
-                        decor: b.decor,
-                        totalAmount: b.totalAmount,
-                        advanceAmount: b.advanceAmount,
-                        paidTillNow: getPaidTillNow(b),
-                        balanceAmount: newBalance,
-                        status: b.status
-                    })
-                });
-                alert(`✅ Recorded ₹${amount} payment! Paid till now: ₹${getPaidTillNow(b)}. Remaining balance: ₹${newBalance}.`);
-            } catch (err) {
-                alert('✅ Saved locally (will sync when online).');
-            }
-        }
-
         function openFormNewBooking() {
+            document.getElementById('editingId').value = '';
+            document.getElementById('formTitle').innerHTML = '<i data-lucide="calendar-plus" class="w-4 h-4 text-amber-700"></i> <span>New Booking Record</span>';
+            document.getElementById('bookingForm').reset();
+            document.getElementById('advanceAmount').value = '0';
+            document.getElementById('isInquiry').checked = false;
+
             document.getElementById('selectedLogView').classList.add('hidden');
             document.getElementById('formView').classList.remove('hidden');
-
-            resetFormState();
 
             if (window.innerWidth < 768) {
                 document.getElementById('bookingListPane').classList.add('hidden');
                 document.getElementById('bookingDetailPane').classList.remove('hidden');
                 document.getElementById('bookingDetailPane').classList.add('flex');
             }
+            lucide.createIcons();
+        }
+
+        function openEditForm(id) {
+            const b = bookings.find(item => item.id === id);
+            if (!b) return;
+
+            document.getElementById('editingId').value = b.id;
+            document.getElementById('formTitle').innerHTML = '<i data-lucide="edit-3" class="w-4 h-4 text-amber-700"></i> <span>Edit Booking Record</span>';
+
+            document.getElementById('clientName').value = b.clientName || '';
+            document.getElementById('clientPhone').value = b.clientPhone || '';
+            document.getElementById('hallLevel').value = b.level || 'Level 1 (Capacity 60)';
+            document.getElementById('bookingDate').value = b.date || '';
+            document.getElementById('timeSlot').value = b.timeSlot || 'Full Day';
+            document.getElementById('decorOption').value = b.decor || 'Standard Flower Arch (Default)';
+            document.getElementById('totalAmount').value = b.totalAmount || 0;
+            document.getElementById('advanceAmount').value = b.advanceAmount || 0;
+            document.getElementById('isInquiry').checked = (b.status === 'Inquiry / Tentative');
+
+            document.getElementById('selectedLogView').classList.add('hidden');
+            document.getElementById('formView').classList.remove('hidden');
+            lucide.createIcons();
         }
 
         function cancelFormEditor() {
@@ -763,272 +753,287 @@
             document.getElementById('selectedLogView').classList.remove('hidden');
         }
 
-        async function handleFormSubmit(e) {
+        function handleFormSubmit(e) {
             e.preventDefault();
 
-            const editingId = document.getElementById('editingId').value;
+            const editId = document.getElementById('editingId').value;
+            const clientName = document.getElementById('clientName').value.trim();
+            const clientPhone = document.getElementById('clientPhone').value.trim();
+            const level = document.getElementById('hallLevel').value;
             const date = document.getElementById('bookingDate').value;
             const timeSlot = document.getElementById('timeSlot').value;
-            const level = document.getElementById('hallLevel').value;
+            const decor = document.getElementById('decorOption').value;
+            const totalAmount = parseFloat(document.getElementById('totalAmount').value) || 0;
+            const advanceAmount = parseFloat(document.getElementById('advanceAmount').value) || 0;
             const isInquiry = document.getElementById('isInquiry').checked;
 
-            const conflict = bookings.find(b => b.id !== editingId && b.date === date && (b.timeSlot === timeSlot || b.timeSlot === 'Full Day' || timeSlot === 'Full Day') && b.level === level && b.status !== 'Inquiry / Tentative');
-            if (conflict && !isInquiry) {
-                alert("⚠️ Date Conflict!\n" + level + " is already fully booked for " + date + " (" + timeSlot + ").");
+            let record;
+
+            if (editId) {
+                const idx = bookings.findIndex(item => item.id === editId);
+                if (idx !== -1) {
+                    const existing = bookings[idx];
+                    const extraPayments = existing.payments || [];
+                    const paidTillNow = advanceAmount + extraPayments.reduce((s, p) => s + (parseFloat(p.amount) || 0), 0);
+                    const balanceDue = Math.max(0, totalAmount - paidTillNow);
+
+                    let status = 'Advance Paid';
+                    if (isInquiry) status = 'Inquiry / Tentative';
+                    else if (balanceDue === 0 && totalAmount > 0) status = 'Fully Paid';
+
+                    record = {
+                        ...existing,
+                        clientName,
+                        clientPhone,
+                        level,
+                        date,
+                        timeSlot,
+                        decor,
+                        totalAmount,
+                        advanceAmount,
+                        status
+                    };
+                    bookings[idx] = record;
+                    selectedBookingId = record.id;
+                }
+            } else {
+                const id = 'SPA-' + Date.now().toString().slice(-6);
+                let status = 'Advance Paid';
+                if (isInquiry) status = 'Inquiry / Tentative';
+                else if (advanceAmount >= totalAmount && totalAmount > 0) status = 'Fully Paid';
+
+                record = {
+                    id,
+                    clientName,
+                    clientPhone,
+                    level,
+                    date,
+                    timeSlot,
+                    decor,
+                    totalAmount,
+                    advanceAmount,
+                    payments: [],
+                    status
+                };
+                bookings.unshift(record);
+                selectedBookingId = id;
+            }
+
+            saveData();
+            syncToGoogleAppsScript(record, 'UPSERT');
+            document.getElementById('formView').classList.add('hidden');
+            document.getElementById('selectedLogView').classList.remove('hidden');
+            renderBookings();
+            renderCalendar();
+        }
+
+        function addPayment(id) {
+            const idx = bookings.findIndex(b => b.id === id);
+            if (idx === -1) return;
+
+            const current = bookings[idx];
+            const balanceDue = getBalanceDue(current);
+
+            if (balanceDue <= 0) {
+                alert('This booking has no pending balance.');
                 return;
             }
 
-            const total = parseFloat(document.getElementById('totalAmount').value) || 0;
-            const advance = parseFloat(document.getElementById('advanceAmount').value) || 0;
+            const input = prompt(`Enter payment amount to add (Balance Due: ₹${balanceDue}):`);
+            if (!input) return;
 
-            const existingBooking = editingId ? bookings.find(b => b.id === editingId) : null;
-            const existingPayments = existingBooking ? (existingBooking.payments || []) : [];
-
-            const tempBooking = {
-                totalAmount: total,
-                advanceAmount: advance,
-                payments: existingPayments
-            };
-
-            const paidTillNow = getPaidTillNow(tempBooking);
-            const balanceDue = getBalanceDue(tempBooking);
-
-            const bookingData = {
-                id: editingId ? editingId : Date.now().toString(),
-                clientName: document.getElementById('clientName').value.trim(),
-                clientPhone: document.getElementById('clientPhone').value.trim(),
-                level: level,
-                date: date,
-                timeSlot: timeSlot,
-                decor: document.getElementById('decorOption').value,
-                totalAmount: total,
-                advanceAmount: advance,
-                payments: existingPayments,
-                status: isInquiry ? 'Inquiry / Tentative' : ((balanceDue <= 0) ? 'Fully Paid' : 'Advance Locked')
-            };
-
-            if (editingId) {
-                const index = bookings.findIndex(b => b.id === editingId);
-                if (index !== -1) {
-                    bookings[index] = bookingData;
-                }
-            } else {
-                bookings.unshift(bookingData);
+            const amount = parseFloat(input);
+            if (isNaN(amount) || amount <= 0) {
+                alert('Please enter a valid positive number.');
+                return;
             }
 
-            selectedBookingId = bookingData.id;
+            const paymentEntry = {
+                date: new Date().toISOString().split('T')[0],
+                amount
+            };
+
+            current.payments = current.payments || [];
+            current.payments.push(paymentEntry);
+
+            const updatedBalance = getBalanceDue(current);
+            if (current.status !== 'Inquiry / Tentative') {
+                current.status = updatedBalance === 0 ? 'Fully Paid' : 'Advance Paid';
+            }
+
+            bookings[idx] = current;
             saveData();
+            syncToGoogleAppsScript(current, 'UPSERT');
             renderBookings();
             renderCalendar();
-            updateFinancialStats();
+        }
 
-            cancelFormEditor();
+        function deleteBooking(id) {
+            const target = bookings.find(b => b.id === id);
+            if (!target) return;
 
-            try {
-                await fetch(APPS_SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        ...bookingData,
-                        paidTillNow: paidTillNow,
-                        balanceAmount: balanceDue
-                    })
-                });
-                alert(isInquiry ? '✅ Inquiry saved & synced to Google Calendar!' : '✅ Booking confirmed & synced to Google Calendar!');
-            } catch (err) {
-                alert('✅ Saved locally (will sync when online).');
+            if (!confirm(`Are you sure you want to delete the booking log for ${target.clientName}?`)) {
+                return;
             }
-        }
-
-        function editBooking(id) {
-            const b = bookings.find(item => item.id === id);
-            if (!b) return;
-
-            document.getElementById('editingId').value = b.id;
-            document.getElementById('clientName').value = b.clientName;
-            document.getElementById('clientPhone').value = b.clientPhone;
-            document.getElementById('hallLevel').value = b.level;
-            document.getElementById('bookingDate').value = b.date;
-            document.getElementById('timeSlot').value = b.timeSlot;
-            document.getElementById('decorOption').value = b.decor;
-            document.getElementById('totalAmount').value = b.totalAmount;
-            document.getElementById('advanceAmount').value = b.advanceAmount;
-            document.getElementById('isInquiry').checked = (b.status === 'Inquiry / Tentative');
-
-            document.getElementById('formTitle').innerHTML = '<i data-lucide="file-edit" class="w-4 h-4 text-amber-700"></i><span>Edit Booking / Convert Inquiry</span>';
-            document.getElementById('submitBtn').innerHTML = '<i data-lucide="save" class="w-4 h-4"></i><span>Update Record & Sync</span>';
-
-            document.getElementById('selectedLogView').classList.add('hidden');
-            document.getElementById('formView').classList.remove('hidden');
-
-            lucide.createIcons();
-        }
-
-        function resetFormState() {
-            document.getElementById('bookingForm').reset();
-            document.getElementById('editingId').value = '';
-            document.getElementById('isInquiry').checked = false;
-            document.getElementById('formTitle').innerHTML = '<i data-lucide="calendar-plus" class="w-4 h-4 text-amber-700"></i><span>New Booking Record</span>';
-            document.getElementById('submitBtn').innerHTML = '<i data-lucide="check-circle-2" class="w-4 h-4"></i><span>Save & Sync to Google Calendar</span>';
-            lucide.createIcons();
-        }
-
-        function setDefaultMonth() {
-            const now = new Date();
-            const year = now.getFullYear();
-            const month = String(now.getMonth() + 1).padStart(2, '0');
-            document.getElementById('calendarMonth').value = `${year}-${month}`;
-        }
-
-        function renderCalendar() {
-            const grid = document.getElementById('calendarGrid');
-            const monthVal = document.getElementById('calendarMonth').value;
-            if (!monthVal) return;
-
-            const [year, month] = monthVal.split('-').map(Number);
-            const firstDay = new Date(year, month - 1, 1).getDay();
-            const daysInMonth = new Date(year, month, 0).getDate();
-
-            let html = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']
-                .map(d => `<div class="font-bold text-stone-400 pb-2 text-[11px]">${d}</div>`).join('');
-
-            for (let i = 0; i < firstDay; i++) {
-                html += '<div></div>';
-            }
-
-            for (let day = 1; day <= daysInMonth; day++) {
-                const targetDateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-
-                const dayBookings = bookings.filter(b => {
-                    if (!b.date) return false;
-                    const cleanStoredDate = b.date.trim().split('T')[0];
-                    return cleanStoredDate === targetDateStr;
-                });
-
-                const isBooked = dayBookings.some(b => b.status !== 'Inquiry / Tentative');
-                const isTentative = dayBookings.some(b => b.status === 'Inquiry / Tentative');
-
-                if (isBooked) {
-                    html += '<div onclick="showDateDetails(\'' + targetDateStr + '\')" class="p-1.5 rounded-xl text-center bg-amber-100 border border-amber-300 text-amber-950 font-bold cursor-pointer shadow-sm hover:bg-amber-200 transition"><span class="text-xs">' + day + '</span><span class="block text-[9px] text-amber-800 font-extrabold leading-none mt-0.5">BOOKED</span></div>';
-                } else if (isTentative) {
-                    html += '<div onclick="showDateDetails(\'' + targetDateStr + '\')" class="p-1.5 rounded-xl text-center bg-yellow-100 border border-yellow-300 text-yellow-900 font-bold cursor-pointer shadow-sm hover:bg-yellow-200 transition"><span class="text-xs">' + day + '</span><span class="block text-[9px] text-yellow-800 font-extrabold leading-none mt-0.5">HOLD</span></div>';
-                } else {
-                    html += '<div class="p-1.5 rounded-xl text-center bg-emerald-50/60 border border-emerald-100 text-stone-700 font-semibold"><span class="text-xs">' + day + '</span><span class="block text-[9px] text-emerald-600 font-medium leading-none mt-0.5">Free</span></div>';
-                }
-            }
-            grid.innerHTML = html;
-        }
-
-        function showDateDetails(dateStr) {
-            const dayBookings = bookings.filter(b => b.date && b.date.trim().split('T')[0] === dateStr);
-            let msg = "📅 Records for " + dateStr + ":\n\n";
-            dayBookings.forEach(b => {
-                msg += "• " + b.clientName + " (" + b.level + ")\n  Slot: " + b.timeSlot + "\n  Status: " + b.status + "\n  Paid Till Now: ₹" + getPaidTillNow(b) + "\n\n";
-            });
-            alert(msg);
-        }
-
-        function updateFinancialStats() {
-            const collected = bookings.reduce((sum, b) => sum + (b.status !== 'Inquiry / Tentative' ? getPaidTillNow(b) : 0), 0);
-            const pending = bookings.reduce((sum, b) => sum + (b.status !== 'Inquiry / Tentative' ? getBalanceDue(b) : 0), 0);
-            document.getElementById('statCollected').innerText = `₹${collected.toLocaleString()}`;
-            document.getElementById('statPending').innerText = `₹${pending.toLocaleString()}`;
-        }
-
-        async function deleteBooking(id) {
-            const targetBooking = bookings.find(b => b.id === id);
-            if (!targetBooking) return;
-
-            const confirmed = confirm(`Delete booking for "${targetBooking.clientName}" on ${targetBooking.date} permanently?`);
-            if (!confirmed) return;
 
             bookings = bookings.filter(b => b.id !== id);
-            saveData();
-
             if (selectedBookingId === id) {
                 selectedBookingId = bookings.length > 0 ? bookings[0].id : null;
             }
 
+            saveData();
+            syncToGoogleAppsScript(target, 'DELETE');
             renderBookings();
             renderCalendar();
-            updateFinancialStats();
-
-            try {
-                await fetch(APPS_SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        action: 'DELETE',
-                        id: targetBooking.id,
-                        clientName: targetBooking.clientName,
-                        date: targetBooking.date
-                    })
-                });
-            } catch (err) {
-                console.error('Failed to sync deletion with Google Calendar:', err);
-            }
         }
 
         function saveData() {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(bookings));
         }
 
-        function exportToCSV() {
-            if (bookings.length === 0) {
-                alert('No booking data to export.');
-                return;
+        async function syncToGoogleAppsScript(record, actionType = 'UPSERT') {
+            if (!APPS_SCRIPT_URL) return;
+
+            const paidTillNow = getPaidTillNow(record);
+            const balanceDue = getBalanceDue(record);
+
+            const payload = {
+                ...record,
+                paidTillNow,
+                balanceAmount: balanceDue,
+                action: actionType
+            };
+
+            try {
+                await fetch(APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify(payload)
+                });
+            } catch (err) {
+                console.error('Failed to sync with Google Apps Script:', err);
             }
-            const headers = ['ID', 'Customer Name', 'Phone', 'Hall Level', 'Date', 'Time Slot', 'Decor', 'Total Amount', 'Advance', 'Paid Till Now', 'Balance', 'Status'];
+        }
+
+        function sendWhatsAppReceipt(id) {
+            const b = bookings.find(item => item.id === id);
+            if (!b) return;
+
+            const paidTillNow = getPaidTillNow(b);
+            const balanceDue = getBalanceDue(b);
+
+            const message = `*SRI POORNA ANUGRAHA MINI HALL*\n` +
+                `*Booking Receipt & Summary*\n` +
+                `--------------------------------\n` +
+                `Booking ID: ${b.id}\n` +
+                `Name: ${b.clientName}\n` +
+                `Hall: ${b.level}\n` +
+                `Date: ${b.date}\n` +
+                `Time Slot: ${b.timeSlot}\n` +
+                `Stage Decor: ${b.decor || 'Standard'}\n` +
+                `Total Rent: ₹${Number(b.totalAmount || 0).toLocaleString('en-IN')}\n` +
+                `Paid Till Now: ₹${paidTillNow.toLocaleString('en-IN')}\n` +
+                `Balance Due: ₹${balanceDue.toLocaleString('en-IN')}\n` +
+                `Status: ${b.status}\n` +
+                `--------------------------------\n` +
+                `Thangavel Street, NGGO Colony, Thudiyalur, Coimbatore\n` +
+                `Contact: 9442071354`;
+
+            const url = `https://wa.me/?text=${encodeURIComponent(message)}`;
+            window.open(url, '_blank');
+        }
+
+        function setDefaultMonth() {
+            const now = new Date();
+            const ym = now.toISOString().slice(0, 7);
+            document.getElementById('calendarMonth').value = ym;
+        }
+
+        function renderCalendar() {
+            const gridEl = document.getElementById('calendarGrid');
+            const ym = document.getElementById('calendarMonth').value || new Date().toISOString().slice(0, 7);
+            const [year, month] = ym.split('-').map(Number);
+
+            const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            let html = daysOfWeek.map(d => `<div class="font-bold text-stone-400 py-1 text-[11px]">${d}</div>`).join('');
+
+            const firstDay = new Date(year, month - 1, 1).getDay();
+            const totalDays = new Date(year, month, 0).getDate();
+
+            for (let i = 0; i < firstDay; i++) {
+                html += `<div class="p-2"></div>`;
+            }
+
+            for (let d = 1; d <= totalDays; d++) {
+                const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                const dayBookings = bookings.filter(b => b.date === dateStr);
+
+                let cellStyle = 'bg-emerald-50 text-emerald-900 border border-emerald-200 hover:bg-emerald-100';
+                let badge = '<span class="block text-[9px] font-semibold text-emerald-600">Free</span>';
+
+                if (dayBookings.length > 0) {
+                    const hasConfirmed = dayBookings.some(b => b.status !== 'Inquiry / Tentative');
+                    if (hasConfirmed) {
+                        cellStyle = 'bg-amber-100 text-amber-950 border border-amber-300 font-bold';
+                        badge = '<span class="block text-[9px] font-bold text-amber-800">Booked</span>';
+                    } else {
+                        cellStyle = 'bg-yellow-50 text-yellow-900 border border-yellow-300 font-semibold';
+                        badge = '<span class="block text-[9px] font-semibold text-yellow-700">Tentative</span>';
+                    }
+                }
+
+                html += `<div onclick="handleDateClick('${dateStr}')" class="p-2 rounded-xl cursor-pointer transition min-h-[54px] flex flex-col justify-between ${cellStyle}">
+                    <span class="font-bold text-xs">${d}</span>
+                    ${badge}
+                </div>`;
+            }
+
+            gridEl.innerHTML = html;
+        }
+
+        function handleDateClick(dateStr) {
+            switchTab('bookings');
+            openFormNewBooking();
+            document.getElementById('bookingDate').value = dateStr;
+        }
+
+        function exportToCSV() {
+            const headers = ['ID', 'Customer Name', 'Phone Number', 'Hall Level', 'Booking Date', 'Time Slot', 'Stage Decor', 'Total Rent', 'Initial Advance', 'Paid Till Now', 'Balance Due', 'Status'];
             const rows = bookings.map(b => [
-                b.id, `"${b.clientName}"`, `"${b.clientPhone}"`, `"${b.level}"`, b.date, `"${b.timeSlot}"`, `"${b.decor}"`, b.totalAmount, b.advanceAmount, getPaidTillNow(b), getBalanceDue(b), b.status
+                b.id,
+                b.clientName,
+                b.clientPhone,
+                b.level,
+                b.date,
+                b.timeSlot,
+                b.decor,
+                b.totalAmount,
+                b.advanceAmount,
+                getPaidTillNow(b),
+                getBalanceDue(b),
+                b.status
             ]);
 
-            const csvContent = "data:text/csv;charset=utf-8," + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
+            const csvContent = 'data:text/csv;charset=utf-8,' +
+                [headers, ...rows].map(row => row.map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(',')).join('\n');
+
             const encodedUri = encodeURI(csvContent);
             const link = document.createElement('a');
             link.setAttribute('href', encodedUri);
-            link.setAttribute('download', `Poorna_Anugraha_Bookings_${new Date().toISOString().slice(0,10)}.csv`);
+            link.setAttribute('download', `Poorna_Anugraha_Bookings_${new Date().toISOString().slice(0, 10)}.csv`);
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
         }
 
-        function shareWhatsAppBooking(id) {
-            const b = bookings.find(item => item.id === id);
-            if (!b) return;
-            const text = "🏛️ *Sri Poorna Anugraha Mini Hall Confirmation*\n\n" +
-                         "*Name:* " + b.clientName + "\n" +
-                         "*Hall:* " + b.level + "\n" +
-                         "*Date:* " + b.date + " (" + b.timeSlot + ")\n" +
-                         "*Decor:* " + b.decor + "\n\n" +
-                         "*Total Amount:* ₹" + b.totalAmount + "\n" +
-                         "*Advance Paid:* ₹" + b.advanceAmount + "\n" +
-                         "*Paid Till Now:* ₹" + getPaidTillNow(b) + "\n" +
-                         "*Balance Due:* ₹" + getBalanceDue(b) + "\n\n" +
-                         "Thank you for booking with us!";
-
-            window.open(`https://wa.me/91${b.clientPhone}?text=${encodeURIComponent(text)}`, '_blank');
-        }
-
-        function shareLatestBookingWhatsApp() {
-            if (bookings.length === 0) {
-                alert('No bookings available to share.');
-                return;
-            }
-            shareWhatsAppBooking(selectedBookingId || bookings[0].id);
-        }
-
         function escapeHtml(str) {
-            return str.replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]));
-        }
-    </script>
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js').catch(err => console.error('SW registration failed:', err));
-            });
+            return String(str || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
         }
     </script>
 </body>

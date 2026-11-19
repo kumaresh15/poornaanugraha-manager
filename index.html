@@ -551,23 +551,24 @@
             document.getElementById('statPending').innerText = `₹${pending.toLocaleString()}`;
         }
 
-       async function deleteBooking(id) {
+    async function deleteBooking(id) {
     const targetBooking = bookings.find(b => b.id === id);
     if (!targetBooking) return;
 
+    // 1. Native confirm modal naturally pauses execution while open
     const confirmed = confirm(`Delete booking for "${targetBooking.clientName}" on ${targetBooking.date} permanently?`);
     if (!confirmed) return;
 
-    // 1. Update local state & UI immediately
+    // 2. Immediate local state & UI cleanup
     bookings = bookings.filter(b => b.id !== id);
     saveData();
     renderBookings();
     renderCalendar();
     updateFinancialStats();
 
-    // 2. Await the POST request to Google Apps Script
+    // 3. Non-blocking asynchronous network call
     try {
-        console.log('Sending DELETE to Apps Script for:', targetBooking.id, targetBooking.date);
+        console.log('Sending DELETE request for ID:', targetBooking.id);
         await fetch(APPS_SCRIPT_URL, {
             method: 'POST',
             mode: 'no-cors',
@@ -579,7 +580,7 @@
                 date: targetBooking.date
             })
         });
-        console.log('DELETE request completed (opaque response due to no-cors).');
+        console.log('DELETE payload successfully dispatched to Google Apps Script.');
     } catch (err) {
         console.error('Failed to sync deletion with Google Calendar:', err);
     }

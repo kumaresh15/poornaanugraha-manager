@@ -261,7 +261,8 @@
 
         async function syncFromGoogleCalendar() {
             try {
-                const response = await fetch(APPS_SCRIPT_URL);
+                const url = APPS_SCRIPT_URL + '?t=' + Date.now();
+                const response = await fetch(url);
                 const remoteEvents = await response.json();
                 
                 if (!Array.isArray(remoteEvents)) return;
@@ -404,7 +405,7 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(bookingData)
                 });
-                alert(isInquiry ? '✅ Inquiry saved! (Marked as tentative hold)' : '✅ Booking confirmed and locked in Google Calendar!');
+                alert(isInquiry ? '✅ Inquiry saved & synced to Google Calendar!' : '✅ Booking confirmed & synced to Google Calendar!');
             } catch (err) {
                 alert('✅ Saved locally (will sync when online).');
             }
@@ -550,13 +551,35 @@
             document.getElementById('statPending').innerText = `₹${pending.toLocaleString()}`;
         }
 
-        function deleteBooking(id) {
-            if (confirm('Delete this booking record permanently from app memory?')) {
+        async function deleteBooking(id) {
+            const targetBooking = bookings.find(b => b.id === id);
+            if (!targetBooking) return;
+
+            if (confirm(`Delete booking for "${targetBooking.clientName}" on ${targetBooking.date} permanently?`)) {
+                // Delete from local memory & storage
                 bookings = bookings.filter(b => b.id !== id);
                 saveData();
                 renderBookings();
                 renderCalendar();
                 updateFinancialStats();
+
+                // Delete from Google Calendar via Apps Script POST
+                try {
+                    fetch(APPS_SCRIPT_URL, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            action: 'DELETE',
+                            id: targetBooking.id,
+                            clientName: targetBooking.clientName,
+                            date: targetBooking.date
+                        })
+                    });
+                    alert('✅ Record deleted locally and Google Calendar removal request sent!');
+                } catch (err) {
+                    console.error('Failed to sync deletion to Google Calendar:', err);
+                }
             }
         }
 

@@ -43,6 +43,38 @@
 </head>
 <body class="bg-amber-50/30 text-stone-800 font-sans antialiased min-h-screen pb-20">
 
+    <!-- 6-Digit PIN Lock Screen Overlay -->
+    <div id="pinLockScreen" class="fixed inset-0 z-50 bg-amber-950/95 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="w-full max-w-sm bg-white rounded-2xl shadow-2xl border border-amber-200 p-6 space-y-5 text-center">
+            <div class="w-12 h-12 rounded-2xl bg-amber-100 text-amber-900 flex items-center justify-center mx-auto">
+                <i data-lucide="lock" class="w-6 h-6"></i>
+            </div>
+            <div class="space-y-1">
+                <h2 class="font-bold text-stone-900 text-lg">Hall Manager Locked</h2>
+                <p class="text-xs text-stone-500">Enter your 6-digit access PIN to open Sri Poorna Anugraha logs.</p>
+            </div>
+
+            <form onsubmit="unlockApp(event)" class="space-y-3">
+                <input
+                    type="password"
+                    id="pinInput"
+                    inputmode="numeric"
+                    pattern="\d{6}"
+                    maxlength="6"
+                    autocomplete="off"
+                    placeholder="••••••"
+                    required
+                    class="w-full text-center text-2xl tracking-[0.5em] font-bold py-2.5 px-3 rounded-xl border border-stone-300 focus:outline-none focus:ring-2 focus:ring-amber-700 bg-stone-50"
+                >
+                <p id="pinError" class="text-xs font-semibold text-rose-600 hidden">Incorrect 6-digit PIN. Please try again.</p>
+                <button type="submit" class="w-full bg-amber-800 hover:bg-amber-900 text-white font-semibold py-2.5 rounded-xl shadow text-xs flex items-center justify-center gap-2 transition">
+                    <i data-lucide="unlock" class="w-4 h-4"></i>
+                    <span>Unlock Dashboard</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
     <!-- Header Top Bar -->
     <header class="bg-amber-900 text-amber-50 sticky top-0 z-30 shadow-md px-4 py-3 flex justify-between items-center">
         <div class="flex items-center space-x-2.5">
@@ -52,10 +84,16 @@
                 <p class="text-xs text-amber-200 font-medium">Mini Hall Management System</p>
             </div>
         </div>
-        <button onclick="exportToCSV()" class="bg-amber-800 hover:bg-amber-700 text-amber-100 text-xs px-3 py-1.5 rounded-lg border border-amber-600 flex items-center gap-1.5 transition">
-            <i data-lucide="download" class="w-3.5 h-3.5"></i>
-            <span>Export CSV</span>
-        </button>
+        <div class="flex items-center gap-2">
+            <button onclick="lockApp()" class="bg-amber-950/70 hover:bg-amber-950 text-amber-100 text-xs px-2.5 py-1.5 rounded-lg border border-amber-700 flex items-center gap-1 transition" title="Lock App">
+                <i data-lucide="lock" class="w-3.5 h-3.5"></i>
+                <span class="hidden sm:inline">Lock</span>
+            </button>
+            <button onclick="exportToCSV()" class="bg-amber-800 hover:bg-amber-700 text-amber-100 text-xs px-3 py-1.5 rounded-lg border border-amber-600 flex items-center gap-1.5 transition">
+                <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                <span>Export CSV</span>
+            </button>
+        </div>
     </header>
 
     <!-- Main Container -->
@@ -292,12 +330,65 @@
     <script>
         const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx3MCfhyHvjPCBxt6FZNZRZX0-D1kIDzNctReSxulWsvTyGZ7o5NXK1ZDHPXwD3MqBqFA/exec';
 
+        // SHA-256 hash for configured 6-digit PIN
+        const EXPECTED_PIN_HASH = '6cafd0b6de0346b572be977707f73c182db9a15a4de33628c3417833ff2dd233';
+        const PIN_SESSION_KEY = 'spa_mini_hall_unlocked_v1';
+
         const STORAGE_KEY = 'spa_mini_hall_bookings_db';
         let bookings = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
         let selectedBookingId = null;
 
+        async function sha256Hex(text) {
+            const data = new TextEncoder().encode(text);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            return [...new Uint8Array(hashBuffer)]
+                .map(b => b.toString(16).padStart(2, '0'))
+                .join('');
+        }
+
+        function checkPinSession() {
+            const lockScreen = document.getElementById('pinLockScreen');
+            if (sessionStorage.getItem(PIN_SESSION_KEY) === 'true') {
+                lockScreen.classList.add('hidden');
+            } else {
+                lockScreen.classList.remove('hidden');
+                setTimeout(() => document.getElementById('pinInput')?.focus(), 50);
+            }
+        }
+
+        async function unlockApp(e) {
+            e.preventDefault();
+            const inputEl = document.getElementById('pinInput');
+            const errorEl = document.getElementById('pinError');
+            const pinValue = inputEl.value.trim();
+
+            if (!/^\d{6}$/.test(pinValue)) {
+                errorEl.textContent = 'PIN must be exactly 6 digits.';
+                errorEl.classList.remove('hidden');
+                return;
+            }
+
+            const digest = await sha256Hex(pinValue);
+            if (digest === EXPECTED_PIN_HASH) {
+                sessionStorage.setItem(PIN_SESSION_KEY, 'true');
+                errorEl.classList.add('hidden');
+                inputEl.value = '';
+                document.getElementById('pinLockScreen').classList.add('hidden');
+            } else {
+                errorEl.textContent = 'Incorrect 6-digit PIN. Please try again.';
+                errorEl.classList.remove('hidden');
+                inputEl.select();
+            }
+        }
+
+        function lockApp() {
+            sessionStorage.removeItem(PIN_SESSION_KEY);
+            checkPinSession();
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
+            checkPinSession();
             setDefaultMonth();
             renderBookings();
             renderCalendar();
@@ -640,7 +731,6 @@
             renderCalendar();
             updateFinancialStats();
 
-            // Sync updated total/balance to Google Calendar
             try {
                 await fetch(APPS_SCRIPT_URL, {
                     method: 'POST',

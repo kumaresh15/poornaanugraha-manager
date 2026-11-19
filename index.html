@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="robots" content="noindex, nofollow">
     <title>Sri Poorna Anugraha Hall Manager</title>
 
     <!-- PWA & Mobile Engine Settings -->
@@ -266,12 +267,16 @@
                         </h2>
                         <p class="text-xs text-stone-500 mt-0.5">Confirmed bookings, edits, payments, and deletions sync via Apps Script to your Google Sheet.</p>
                     </div>
-                    <div class="flex items-center gap-2">
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button onclick="syncExistingConfirmedBookingsToSheet()" class="bg-amber-800 hover:bg-amber-900 text-white text-xs px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition">
+                            <i data-lucide="upload-cloud" class="w-3.5 h-3.5"></i>
+                            <span>Sync Existing to Sheet</span>
+                        </button>
                         <button onclick="reloadSheetFrame()" class="bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition">
                             <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
                             <span>Refresh Sheet</span>
                         </button>
-                        <a id="openSheetExternalLink" href="https://docs.google.com/spreadsheets/d/1AcT_GZ3wJi5JupRtT-Y84KCsL1d6oLqPogxbkwvdHzo/edit?gid=0#gid=0" target="_blank" rel="noopener noreferrer" class="bg-emerald-700 hover:bg-emerald-800 text-white text-xs px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition">
+                        <a id="openSheetExternalLink" href="#" target="_blank" rel="noopener noreferrer" class="bg-emerald-700 hover:bg-emerald-800 text-white text-xs px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition">
                             <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
                             <span>Open in Google Sheets</span>
                         </a>
@@ -382,12 +387,12 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            lucide.createIcons();
             checkPinSession();
             setDefaultMonth();
             initSheetTab();
             renderBookings();
             renderCalendar();
+            lucide.createIcons();
             syncFromGoogleCalendar();
         });
 
@@ -403,13 +408,18 @@
             return trimmed;
         }
 
+        function getActiveSheetUrl() {
+            const inputVal = document.getElementById('sheetUrlInput')?.value.trim();
+            return localStorage.getItem(SHEET_URL_STORAGE_KEY) || inputVal || DEFAULT_GOOGLE_SHEET_URL;
+        }
+
         function initSheetTab() {
-            const savedUrl = localStorage.getItem(SHEET_URL_STORAGE_KEY) || DEFAULT_GOOGLE_SHEET_URL;
+            const url = getActiveSheetUrl();
             const inputEl = document.getElementById('sheetUrlInput');
-            if (inputEl && savedUrl) {
-                inputEl.value = savedUrl;
+            if (inputEl && url) {
+                inputEl.value = url;
             }
-            renderSheetFrame(savedUrl);
+            renderSheetFrame(url);
         }
 
         function saveSheetUrl(e) {
@@ -421,8 +431,7 @@
         }
 
         function reloadSheetFrame() {
-            const url = localStorage.getItem(SHEET_URL_STORAGE_KEY) || document.getElementById('sheetUrlInput').value.trim() || DEFAULT_GOOGLE_SHEET_URL;
-            renderSheetFrame(url);
+            renderSheetFrame(getActiveSheetUrl());
         }
 
         function renderSheetFrame(rawUrl) {
@@ -544,6 +553,7 @@
                     saveData();
                     renderBookings();
                     renderCalendar();
+                    lucide.createIcons();
                 }
             } catch (err) {
                 console.log('GCal Sync skipped:', err);
@@ -565,6 +575,7 @@
             });
 
             if (tabName === 'calendar') renderCalendar();
+            if (tabName === 'spreadsheet') reloadSheetFrame();
         }
 
         function renderBookings() {
@@ -581,8 +592,8 @@
 
             if (filtered.length === 0) {
                 listEl.innerHTML = '<div class="p-8 text-center text-stone-400"><i data-lucide="inbox" class="w-8 h-8 mx-auto mb-2 opacity-50"></i><p class="text-xs font-medium">No booking records found.</p></div>';
-                lucide.createIcons();
                 renderSelectedLog();
+                lucide.createIcons();
                 return;
             }
 
@@ -611,8 +622,8 @@
                 </div>`;
             }).join('');
 
-            lucide.createIcons();
             renderSelectedLog();
+            lucide.createIcons();
         }
 
         function selectBooking(id) {
@@ -704,8 +715,6 @@
                     </div>
                 </div>
             `;
-
-            lucide.createIcons();
         }
 
         function openFormNewBooking() {
@@ -914,6 +923,26 @@
             } catch (err) {
                 console.error('Failed to sync with Google Apps Script:', err);
             }
+        }
+
+        async function syncExistingConfirmedBookingsToSheet() {
+            const confirmed = bookings.filter(b => {
+                const st = String(b.status || '').trim().toLowerCase();
+                return st && !['inquiry / tentative', 'inquiry', 'tentative', 'hold', 'calendar locked'].includes(st);
+            });
+
+            if (confirmed.length === 0) {
+                alert('No confirmed local bookings found to sync. (Edit a "Calendar Locked" or tentative record and uncheck Tentative if it is confirmed.)');
+                return;
+            }
+
+            for (let i = 0; i < confirmed.length; i++) {
+                await syncToGoogleAppsScript(confirmed[i], 'UPSERT');
+                await new Promise(resolve => setTimeout(resolve, 250));
+            }
+
+            alert(`Sent ${confirmed.length} confirmed booking(s) to sync with Google Sheets.`);
+            reloadSheetFrame();
         }
 
         function sendWhatsAppReceipt(id) {

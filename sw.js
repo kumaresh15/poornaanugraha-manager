@@ -1,5 +1,5 @@
 const CACHE = 'hall-manager-v1';
-const APP_SHELL = ['/', '/index.html', '/manifest.json', '/icons/icon-192.png', '/icons/icon-512.png'];
+const APP_SHELL = ['/', '/index.html', '/manifest.json', '/icon-192.png', '/icon-512.png'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE).then((c) => c.addAll(APP_SHELL)));
@@ -13,8 +13,6 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Network first, fall back to cache when offline. Only handles same-origin GET requests,
-// so Google Apps Script and CDN calls are left alone.
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
   if (event.request.method !== 'GET' || url.origin !== self.location.origin) return;

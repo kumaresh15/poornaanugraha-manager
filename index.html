@@ -77,10 +77,10 @@
                 <i data-lucide="lock" class="w-3.5 h-3.5"></i>
                 <span class="hidden sm:inline">Lock</span>
             </button>
-            <button onclick="exportToCSV()" class="bg-amber-800 hover:bg-amber-700 text-amber-100 text-xs px-3 py-1.5 rounded-lg border border-amber-600 flex items-center gap-1.5 transition">
-                <i data-lucide="download" class="w-3.5 h-3.5"></i>
-                <span>Export CSV</span>
-            </button>
+            <a href="https://docs.google.com/spreadsheets/d/1AcT_GZ3wJi5JupRtT-Y84KCsL1d6oLqPogxbkwvdHzo/edit" target="_blank" rel="noopener noreferrer" class="bg-emerald-700 hover:bg-emerald-800 text-white text-xs px-3 py-1.5 rounded-lg border border-emerald-600 flex items-center gap-1.5 transition">
+                <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+                <span>Open in Sheets</span>
+            </a>
         </div>
     </header>
 
@@ -217,7 +217,7 @@
 
                                 <div class="flex items-center gap-2 pt-1 bg-amber-50/60 p-3 rounded-xl border border-amber-200">
                                     <input type="checkbox" id="isInquiry" class="w-4 h-4 text-amber-800 rounded border-stone-300 focus:ring-amber-600">
-                                    <label for="isInquiry" class="text-xs font-semibold text-amber-900 cursor-pointer">Mark as Inquiry / Tentative (Excluded from confirmed Google Sheet)</label>
+                                    <label for="isInquiry" class="text-xs font-semibold text-amber-900 cursor-pointer">Mark as Inquiry / Tentative (Excluded from Google Sheet)</label>
                                 </div>
 
                                 <button type="submit" id="submitBtn" class="w-full bg-amber-800 hover:bg-amber-900 active:bg-amber-950 text-white font-semibold py-2.5 rounded-xl shadow-md flex items-center justify-center gap-2 text-xs transition">
@@ -256,54 +256,11 @@
             </div>
         </section>
 
-        <!-- Tab 3: Linked Google Sheet View -->
-        <section id="tab-spreadsheet" class="tab-content hidden space-y-4">
-            <div class="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-stone-200 space-y-4">
-                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-stone-100 pb-3">
-                    <div>
-                        <h2 class="font-bold text-stone-800 text-sm sm:text-base flex items-center gap-2">
-                            <i data-lucide="sheet" class="w-5 h-5 text-emerald-700"></i>
-                            <span>Synchronised Google Sheets</span>
-                        </h2>
-                        <p class="text-xs text-stone-500 mt-0.5">Confirmed bookings, edits, payments, and deletions sync via Apps Script to your Google Sheet.</p>
-                    </div>
-                    <div class="flex flex-wrap items-center gap-2">
-                        <button onclick="syncExistingConfirmedBookingsToSheet()" class="bg-amber-800 hover:bg-amber-900 text-white text-xs px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition">
-                            <i data-lucide="upload-cloud" class="w-3.5 h-3.5"></i>
-                            <span>Sync Existing to Sheet</span>
-                        </button>
-                        <button onclick="reloadSheetFrame()" class="bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition">
-                            <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
-                            <span>Refresh Sheet</span>
-                        </button>
-                        <a id="openSheetExternalLink" href="#" target="_blank" rel="noopener noreferrer" class="bg-emerald-700 hover:bg-emerald-800 text-white text-xs px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition">
-                            <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
-                            <span>Open in Google Sheets</span>
-                        </a>
-                    </div>
-                </div>
-
-                <form onsubmit="saveSheetUrl(event)" class="flex flex-col sm:flex-row gap-2">
-                    <input
-                        type="url"
-                        id="sheetUrlInput"
-                        placeholder="Paste your Google Sheets link (https://docs.google.com/spreadsheets/d/...)"
-                        class="flex-1 text-xs px-3.5 py-2 rounded-xl border border-stone-300 focus:outline-none focus:ring-2 focus:ring-amber-700 bg-stone-50"
-                    >
-                    <button type="submit" class="bg-amber-800 hover:bg-amber-900 text-white text-xs font-semibold px-4 py-2 rounded-xl transition">
-                        Save Sheet Link
-                    </button>
-                </form>
-
-                <div id="sheetEmbedContainer" class="rounded-xl border border-stone-200 overflow-hidden bg-stone-50 h-[calc(100vh-290px)] min-h-[420px] flex items-center justify-center"></div>
-            </div>
-        </section>
-
     </main>
 
-    <!-- Bottom Navigation Bar (3 Tabs: Bookings, Calendar, Spreadsheet) -->
+    <!-- Bottom Navigation Bar (2 Tabs: Bookings & Calendar) -->
     <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-stone-200 shadow-lg z-40">
-        <div class="max-w-lg mx-auto grid grid-cols-3 py-2 text-center text-xs">
+        <div class="max-w-md mx-auto grid grid-cols-2 py-2 text-center text-xs">
             <button onclick="switchTab('bookings')" id="nav-bookings" class="flex flex-col items-center justify-center text-amber-800 font-bold space-y-1">
                 <i data-lucide="book-open" class="w-5 h-5"></i>
                 <span>Bookings</span>
@@ -312,19 +269,12 @@
                 <i data-lucide="calendar" class="w-5 h-5"></i>
                 <span>Calendar</span>
             </button>
-            <button onclick="switchTab('spreadsheet')" id="nav-spreadsheet" class="flex flex-col items-center justify-center text-stone-400 font-medium space-y-1">
-                <i data-lucide="sheet" class="w-5 h-5"></i>
-                <span>Spreadsheet</span>
-            </button>
         </div>
     </nav>
 
     <!-- Application Script Logic -->
     <script>
         const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx3MCfhyHvjPCBxt6FZNZRZX0-D1kIDzNctReSxulWsvTyGZ7o5NXK1ZDHPXwD3MqBqFA/exec';
-
-        const DEFAULT_GOOGLE_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1AcT_GZ3wJi5JupRtT-Y84KCsL1d6oLqPogxbkwvdHzo/edit?gid=0#gid=0';
-        const SHEET_URL_STORAGE_KEY = 'spa_mini_hall_google_sheet_url';
 
         // SHA-256 hash for configured 6-digit PIN
         const EXPECTED_PIN_HASH = '6cafd0b6de0346b572be977707f73c182db9a15a4de33628c3417833ff2dd233';
@@ -389,65 +339,11 @@
         document.addEventListener('DOMContentLoaded', () => {
             checkPinSession();
             setDefaultMonth();
-            initSheetTab();
             renderBookings();
             renderCalendar();
             lucide.createIcons();
             syncFromGoogleCalendar();
         });
-
-        function toEmbeddableSheetUrl(rawUrl) {
-            if (!rawUrl) return '';
-            const trimmed = rawUrl.trim();
-            const match = trimmed.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
-            if (match && match[1]) {
-                const gidMatch = trimmed.match(/[?&#]gid=([0-9]+)/);
-                const gidParam = gidMatch ? `?gid=${gidMatch[1]}&rm=minimal` : '?rm=minimal';
-                return `https://docs.google.com/spreadsheets/d/${match[1]}/edit${gidParam}`;
-            }
-            return trimmed;
-        }
-
-        function getActiveSheetUrl() {
-            const inputVal = document.getElementById('sheetUrlInput')?.value.trim();
-            return localStorage.getItem(SHEET_URL_STORAGE_KEY) || inputVal || DEFAULT_GOOGLE_SHEET_URL;
-        }
-
-        function initSheetTab() {
-            const url = getActiveSheetUrl();
-            const inputEl = document.getElementById('sheetUrlInput');
-            if (inputEl && url) {
-                inputEl.value = url;
-            }
-            renderSheetFrame(url);
-        }
-
-        function saveSheetUrl(e) {
-            e.preventDefault();
-            const url = document.getElementById('sheetUrlInput').value.trim();
-            if (!url) return;
-            localStorage.setItem(SHEET_URL_STORAGE_KEY, url);
-            renderSheetFrame(url);
-        }
-
-        function reloadSheetFrame() {
-            renderSheetFrame(getActiveSheetUrl());
-        }
-
-        function renderSheetFrame(rawUrl) {
-            const container = document.getElementById('sheetEmbedContainer');
-            const externalLink = document.getElementById('openSheetExternalLink');
-
-            if (!rawUrl) {
-                externalLink.href = 'https://docs.google.com/spreadsheets/';
-                container.innerHTML = '<p class="text-xs text-stone-500 p-6 text-center">Paste your Google Sheets URL above and click <strong>Save Sheet Link</strong> to display your spreadsheet here.</p>';
-                return;
-            }
-
-            externalLink.href = rawUrl;
-            const embedSrc = toEmbeddableSheetUrl(rawUrl);
-            container.innerHTML = `<iframe src="${escapeHtml(embedSrc)}" class="w-full h-full border-0" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>`;
-        }
 
         function getPaidTillNow(b) {
             const initial = parseFloat(b.advanceAmount) || 0;
@@ -532,7 +428,7 @@
                     });
 
                     if (!exists) {
-                        bookings.push({
+                        const newRecord = {
                             id: gcalId,
                             clientName: parsedClientName,
                             clientPhone: phone,
@@ -544,8 +440,14 @@
                             advanceAmount: advance,
                             payments: [],
                             status: status
-                        });
+                        };
+                        bookings.push(newRecord);
                         hasNewSync = true;
+
+                        // Auto-sync non-tentative calendar records directly to Google Sheets
+                        if (status !== 'Inquiry / Tentative') {
+                            syncToGoogleAppsScript(newRecord, 'UPSERT');
+                        }
                     }
                 });
 
@@ -564,7 +466,7 @@
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.getElementById(`tab-${tabName}`).classList.remove('hidden');
 
-            const navs = ['bookings', 'calendar', 'spreadsheet'];
+            const navs = ['bookings', 'calendar'];
             navs.forEach(nav => {
                 const btn = document.getElementById(`nav-${nav}`);
                 if (nav === tabName) {
@@ -575,7 +477,6 @@
             });
 
             if (tabName === 'calendar') renderCalendar();
-            if (tabName === 'spreadsheet') reloadSheetFrame();
         }
 
         function renderBookings() {
@@ -925,45 +826,6 @@
             }
         }
 
-        async function syncExistingConfirmedBookingsToSheet() {
-            const excludedStatuses = [
-                'inquiry / tentative',
-                'inquiry',
-                'tentative',
-                'hold',
-                'cancelled',
-                'canceled'
-            ];
-
-            const confirmed = bookings.filter(b => {
-                const st = String(b.status || '').trim().toLowerCase();
-                const titleUpper = String(b.clientName || '').toUpperCase();
-                if (titleUpper.startsWith('HOLD:') || titleUpper.includes('TENTATIVE') || titleUpper.includes('INQUIRY')) {
-                    return false;
-                }
-                return !excludedStatuses.includes(st);
-            });
-
-            if (confirmed.length === 0) {
-                alert('No confirmed bookings found in local storage.');
-                return;
-            }
-
-            for (let i = 0; i < confirmed.length; i++) {
-                const recordToSync = {
-                    ...confirmed[i],
-                    status: (String(confirmed[i].status || '').toLowerCase() === 'calendar locked' || !confirmed[i].status)
-                        ? (getBalanceDue(confirmed[i]) === 0 && (parseFloat(confirmed[i].totalAmount) || 0) > 0 ? 'Fully Paid' : 'Advance Paid')
-                        : confirmed[i].status
-                };
-                await syncToGoogleAppsScript(recordToSync, 'UPSERT');
-                await new Promise(resolve => setTimeout(resolve, 350));
-            }
-
-            alert(`Synced ${confirmed.length} booking(s) to Google Sheets.`);
-            reloadSheetFrame();
-        }
-
         function sendWhatsAppReceipt(id) {
             const b = bookings.find(item => item.id === id);
             if (!b) return;
@@ -1044,35 +906,6 @@
             switchTab('bookings');
             openFormNewBooking();
             document.getElementById('bookingDate').value = dateStr;
-        }
-
-        function exportToCSV() {
-            const headers = ['ID', 'Customer Name', 'Phone Number', 'Hall Level', 'Booking Date', 'Time Slot', 'Stage Decor', 'Total Rent', 'Initial Advance', 'Paid Till Now', 'Balance Due', 'Status'];
-            const rows = bookings.map(b => [
-                b.id,
-                b.clientName,
-                b.clientPhone,
-                b.level,
-                b.date,
-                b.timeSlot,
-                b.decor,
-                b.totalAmount,
-                b.advanceAmount,
-                getPaidTillNow(b),
-                getBalanceDue(b),
-                b.status
-            ]);
-
-            const csvContent = 'data:text/csv;charset=utf-8,' +
-                [headers, ...rows].map(row => row.map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(',')).join('\n');
-
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement('a');
-            link.setAttribute('href', encodedUri);
-            link.setAttribute('download', `Poorna_Anugraha_Bookings_${new Date().toISOString().slice(0, 10)}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
         }
 
         function escapeHtml(str) {

@@ -357,6 +357,17 @@
             syncFromGoogleCalendar();
         });
 
+        function getSortedBookings(list) {
+            return [...list].sort((a, b) => {
+                const dateA = String(a.date || '');
+                const dateB = String(b.date || '');
+                if (dateA !== dateB) {
+                    return dateB.localeCompare(dateA);
+                }
+                return String(b.timeSlot || '').localeCompare(String(a.timeSlot || ''));
+            });
+        }
+
         function isConfirmedBooking(b) {
             const status = String(b?.status || '').trim().toLowerCase();
             return (
@@ -532,10 +543,12 @@
             const listEl = document.getElementById('bookingList');
             const searchVal = (document.getElementById('searchInput').value || '').toLowerCase();
 
-            const filtered = bookings.filter(b =>
-                (b.clientName || '').toLowerCase().includes(searchVal) ||
-                (b.clientPhone || '').toLowerCase().includes(searchVal) ||
-                (b.date || '').toLowerCase().includes(searchVal)
+            const filtered = getSortedBookings(
+                bookings.filter(b =>
+                    (b.clientName || '').toLowerCase().includes(searchVal) ||
+                    (b.clientPhone || '').toLowerCase().includes(searchVal) ||
+                    (b.date || '').toLowerCase().includes(searchVal)
+                )
             );
 
             document.getElementById('bookingCounter').innerText = `${filtered.length} records`;
@@ -547,7 +560,7 @@
                 return;
             }
 
-            if (!selectedBookingId || !bookings.some(b => b.id === selectedBookingId)) {
+            if (!selectedBookingId || !filtered.some(b => b.id === selectedBookingId)) {
                 selectedBookingId = filtered[0].id;
             }
 

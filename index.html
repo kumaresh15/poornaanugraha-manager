@@ -177,7 +177,7 @@
                                     </div>
 
                                     <div>
-                                        <label class="block text-xs font-semibold text-stone-600 mb-1">Customer Address (Local / WhatsApp Only)</label>
+                                        <label class="block text-xs font-semibold text-stone-600 mb-1">Customer Address (Synced to Calendar & WhatsApp)</label>
                                         <input type="text" id="clientAddress" placeholder="Door No, Street, Area, Coimbatore" class="w-full text-xs px-3.5 py-2 rounded-xl border border-stone-300 focus:outline-none focus:ring-2 focus:ring-amber-600 bg-white">
                                     </div>
 
@@ -457,6 +457,7 @@
                     let parsedClientName = evt.title
                         ? evt.title.replace(/^(BOOKED:|HOLD:)\s*/i, '').trim()
                         : 'Google Calendar Event';
+                    let parsedAddress = '';
                     let parsedEventName = 'Function / Event';
                     let phone = 'N/A';
                     let hallLevel = 'Full Venue';
@@ -474,6 +475,7 @@
                         const lines = evt.description.split('\n');
                         lines.forEach(line => {
                             if (line.startsWith('Customer Name:')) parsedClientName = line.replace('Customer Name:', '').trim();
+                            if (line.startsWith('Customer Address:')) parsedAddress = line.replace('Customer Address:', '').trim();
                             if (line.startsWith('Event Name:')) parsedEventName = line.replace('Event Name:', '').trim();
                             if (line.startsWith('Phone Number:')) phone = line.replace('Phone Number:', '').trim();
                             if (line.startsWith('Hall Level:')) hallLevel = line.replace('Hall Level:', '').trim();
@@ -487,7 +489,7 @@
 
                     const normalizedEvtName = normalizeClientName(parsedClientName);
 
-                    const exists = bookings.some(b => {
+                    const matchIdx = bookings.findIndex(b => {
                         if (b.id === gcalId || (descAppId && b.id === descAppId)) {
                             return true;
                         }
@@ -498,14 +500,14 @@
                         return false;
                     });
 
-                    if (!exists) {
+                    if (matchIdx === -1) {
                         const isConfirmed = isConfirmedBooking({ status });
                         const newRecord = {
                             id: gcalId,
                             clientName: parsedClientName,
                             eventName: parsedEventName,
                             clientPhone: phone,
-                            clientAddress: '',
+                            clientAddress: parsedAddress,
                             level: hallLevel,
                             date: evt.date,
                             timeSlot: slot,
@@ -523,6 +525,9 @@
                         if (status !== 'Inquiry / Tentative') {
                             syncToGoogleAppsScript(newRecord, 'UPSERT');
                         }
+                    } else if (parsedAddress && !bookings[matchIdx].clientAddress) {
+                        bookings[matchIdx].clientAddress = parsedAddress;
+                        hasNewSync = true;
                     }
                 });
 
@@ -978,24 +983,14 @@
             const cautionDeposit = getCautionDeposit(record);
             const cautionRefunded = getCautionRefunded(record);
 
-            // Intentionally exclude clientAddress from the Google Sheets/Calendar payload
             const payload = {
-                id: record.id,
-                clientName: record.clientName,
+                ...record,
+                clientAddress: record.clientAddress || '',
                 eventName: record.eventName || 'Function / Event',
-                clientPhone: record.clientPhone,
-                level: record.level,
-                date: record.date,
-                timeSlot: record.timeSlot,
-                decor: record.decor,
-                totalAmount: record.totalAmount,
-                advanceAmount: record.advanceAmount,
                 paidTillNow,
                 balanceAmount: balanceDue,
                 cautionDeposit,
                 cautionRefunded,
-                payments: record.payments || [],
-                status: record.status,
                 action: actionType
             };
 

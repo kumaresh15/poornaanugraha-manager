@@ -108,7 +108,7 @@
                         </div>
                         <div class="relative">
                             <i data-lucide="search" class="w-3.5 h-3.5 text-stone-400 absolute left-3 top-2.5"></i>
-                            <input type="text" id="searchInput" oninput="renderBookings()" placeholder="Search name, phone, or date..." class="w-full text-xs pl-8 pr-3 py-1.5 rounded-xl border border-stone-200 bg-white focus:outline-none focus:ring-1 focus:ring-amber-600">
+                            <input type="text" id="searchInput" oninput="renderBookings()" placeholder="Search name, event, phone, or date..." class="w-full text-xs pl-8 pr-3 py-1.5 rounded-xl border border-stone-200 bg-white focus:outline-none focus:ring-1 focus:ring-amber-600">
                         </div>
                     </div>
 
@@ -150,9 +150,15 @@
                                 <input type="hidden" id="editingId" value="">
 
                                 <div class="space-y-3">
-                                    <div>
-                                        <label class="block text-xs font-semibold text-stone-600 mb-1">Customer Name *</label>
-                                        <input type="text" id="clientName" required placeholder="e.g. Kumaresh S" class="w-full text-xs px-3.5 py-2 rounded-xl border border-stone-300 focus:outline-none focus:ring-2 focus:ring-amber-600 bg-white">
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                        <div>
+                                            <label class="block text-xs font-semibold text-stone-600 mb-1">Customer Name *</label>
+                                            <input type="text" id="clientName" required placeholder="e.g. Kumaresh S" class="w-full text-xs px-3.5 py-2 rounded-xl border border-stone-300 focus:outline-none focus:ring-2 focus:ring-amber-600 bg-white">
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-semibold text-stone-600 mb-1">Event Name *</label>
+                                            <input type="text" id="eventName" required placeholder="e.g. Naming Ceremony / Engagement" class="w-full text-xs px-3.5 py-2 rounded-xl border border-stone-300 focus:outline-none focus:ring-2 focus:ring-amber-600 bg-white">
+                                        </div>
                                     </div>
 
                                     <div class="grid grid-cols-2 gap-3">
@@ -446,6 +452,7 @@
                     let parsedClientName = evt.title
                         ? evt.title.replace(/^(BOOKED:|HOLD:)\s*/i, '').trim()
                         : 'Google Calendar Event';
+                    let parsedEventName = 'Function / Event';
                     let phone = 'N/A';
                     let hallLevel = 'Full Venue';
                     let slot = 'Full Day';
@@ -462,6 +469,7 @@
                         const lines = evt.description.split('\n');
                         lines.forEach(line => {
                             if (line.startsWith('Customer Name:')) parsedClientName = line.replace('Customer Name:', '').trim();
+                            if (line.startsWith('Event Name:')) parsedEventName = line.replace('Event Name:', '').trim();
                             if (line.startsWith('Phone Number:')) phone = line.replace('Phone Number:', '').trim();
                             if (line.startsWith('Hall Level:')) hallLevel = line.replace('Hall Level:', '').trim();
                             if (line.startsWith('Time Slot:')) slot = line.replace('Time Slot:', '').trim();
@@ -490,6 +498,7 @@
                         const newRecord = {
                             id: gcalId,
                             clientName: parsedClientName,
+                            eventName: parsedEventName,
                             clientPhone: phone,
                             level: hallLevel,
                             date: evt.date,
@@ -546,6 +555,7 @@
             const filtered = getSortedBookings(
                 bookings.filter(b =>
                     (b.clientName || '').toLowerCase().includes(searchVal) ||
+                    (b.eventName || '').toLowerCase().includes(searchVal) ||
                     (b.clientPhone || '').toLowerCase().includes(searchVal) ||
                     (b.date || '').toLowerCase().includes(searchVal)
                 )
@@ -571,14 +581,15 @@
                 if (b.status === 'Inquiry / Tentative') badgeColor = 'bg-yellow-100 text-yellow-900';
 
                 return `<div onclick="selectBooking('${b.id}')" class="p-3.5 cursor-pointer transition border-l-4 ${isSelected ? 'bg-amber-50/80 border-amber-800' : 'hover:bg-stone-50 border-transparent'}">
-                    <div class="flex justify-between items-start">
+                    <div class="flex justify-between items-start gap-2">
                         <div>
                             <h4 class="font-bold text-stone-900 text-xs">${escapeHtml(b.clientName)}</h4>
+                            <p class="text-[11px] font-medium text-amber-900/80 mt-0.5">${escapeHtml(b.eventName || 'Function / Event')}</p>
                             <p class="text-[11px] text-stone-500 flex items-center gap-1 mt-0.5">
                                 <i data-lucide="calendar" class="w-3 h-3"></i> ${b.date} (${b.timeSlot})
                             </p>
                         </div>
-                        <span class="text-[10px] px-2 py-0.5 rounded-full font-semibold ${badgeColor}">
+                        <span class="text-[10px] px-2 py-0.5 rounded-full font-semibold shrink-0 ${badgeColor}">
                             ${b.status}
                         </span>
                     </div>
@@ -647,6 +658,7 @@
                     </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs text-stone-700 bg-white p-3.5 rounded-xl border border-stone-100">
+                        <p><strong class="text-stone-500">Event Name:</strong> ${escapeHtml(b.eventName || 'Function / Event')}</p>
                         <p><strong class="text-stone-500">Hall Level:</strong> ${escapeHtml(b.level)}</p>
                         <p><strong class="text-stone-500">Date & Slot:</strong> ${b.date} (${escapeHtml(b.timeSlot)})</p>
                         <p><strong class="text-stone-500">Stage Decor:</strong> ${escapeHtml(b.decor || 'Standard')}</p>
@@ -726,6 +738,7 @@
             document.getElementById('formTitle').innerHTML = '<i data-lucide="edit-3" class="w-4 h-4 text-amber-700"></i> <span>Edit Booking Record</span>';
 
             document.getElementById('clientName').value = b.clientName || '';
+            document.getElementById('eventName').value = b.eventName || 'Function / Event';
             document.getElementById('clientPhone').value = b.clientPhone || '';
             document.getElementById('hallLevel').value = b.level || 'Level 1 (Capacity 60)';
             document.getElementById('bookingDate').value = b.date || '';
@@ -753,6 +766,7 @@
 
             const editId = document.getElementById('editingId').value;
             const clientName = document.getElementById('clientName').value.trim();
+            const eventName = document.getElementById('eventName').value.trim() || 'Function / Event';
             const clientPhone = document.getElementById('clientPhone').value.trim();
             const level = document.getElementById('hallLevel').value;
             const date = document.getElementById('bookingDate').value;
@@ -788,6 +802,7 @@
                     record = {
                         ...existing,
                         clientName,
+                        eventName,
                         clientPhone,
                         level,
                         date,
@@ -820,6 +835,7 @@
                 record = {
                     id,
                     clientName,
+                    eventName,
                     clientPhone,
                     level,
                     date,
@@ -951,6 +967,7 @@
 
             const payload = {
                 ...record,
+                eventName: record.eventName || 'Function / Event',
                 paidTillNow,
                 balanceAmount: balanceDue,
                 cautionDeposit,
@@ -986,6 +1003,7 @@
                 `--------------------------------\n` +
                 `Booking ID: ${b.id}\n` +
                 `Name: ${b.clientName}\n` +
+                `Event: ${b.eventName || 'Function / Event'}\n` +
                 `Hall: ${b.level}\n` +
                 `Date: ${b.date}\n` +
                 `Time Slot: ${b.timeSlot}\n` +
